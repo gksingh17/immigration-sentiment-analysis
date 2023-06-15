@@ -1,4 +1,17 @@
+# (For Windows) 
+# pip install virtualenv
+# virtualenv yt-comment-fetcher
+# yt-comment-fetcher\Scripts\activate
+# yt-comment-fetcher\Scripts\pip.exe install google-api-python-client
+
+# (For Mac/Linux) 
+# pip3 install virtualenv
+# virtualenv yt-comment-fetcher
+# source yt-comment-fetcher/bin/activate
+# yt-comment-fetcher/bin/pip install google-api-python-client
+
 from googleapiclient.discovery import build
+from dotenv import load_dotenv
 import os
 from dotenv import load_dotenv
 # api_key = os.environ.get('CLIENT_SECRET')
@@ -7,6 +20,8 @@ load_dotenv()
 api_key = os.getenv('CLIENT_SECRET')
 print(api_key)
 
+load_dotenv()
+api_key = os.getenv('CLIENT_SECRET')
 youtube = build('youtube', 'v3', developerKey=api_key)
 vidId = '-bpkiObJMCY'
 request = youtube.commentThreads().list(
@@ -16,5 +31,4 @@ request = youtube.commentThreads().list(
 )
 
 response = request.execute()
-youtube.close()
 print(response)
