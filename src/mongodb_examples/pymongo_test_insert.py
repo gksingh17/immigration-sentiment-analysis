@@ -4,7 +4,7 @@ dbname = get_database()
 collection_name = dbname["user_1_items"]
 
 item_1 = {
-  "_id" : "U1IT00001",
+  "_id" : "U1IT000015",
   "item_name" : "Blender",
   "max_discount" : "10%",
   "batch_number" : "RR450020FRG",
@@ -13,7 +13,7 @@ item_1 = {
 }
 
 item_2 = {
-  "_id" : "U1IT00002",
+  "_id" : "U1IT000021",
   "item_name" : "Egg",
   "category" : "food",
   "quantity" : 12,
