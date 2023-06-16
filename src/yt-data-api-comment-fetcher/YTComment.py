@@ -13,22 +13,60 @@
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 import os
-from dotenv import load_dotenv
-# api_key = os.environ.get('CLIENT_SECRET')
-load_dotenv()
+import csv
+from apiclient.errors import HttpError
 
-api_key = os.getenv('CLIENT_SECRET')
-print(api_key)
+def get_comments(youtube, vidId, commentInfo = [], pgtoken=""):
+    request = youtube.commentThreads().list(
+        part = "snippet,replies",
+        videoId = vidId,
+        pageToken = pgtoken,
+        textFormat = "plainText"
+        )
+    response = request.execute()
+    
+    for item in response["items"]:
+        parent_id = item["id"]
+        topLevelComment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+        authorName = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
+        likes = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
+        datePublished = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"]  
+        topCommentInfo = (parent_id,authorName,likes,datePublished,topLevelComment)
+        commentInfo.append(topCommentInfo)
+        
+        replies = youtube.comments().list(
+            part="snippet",
+            parentId = parent_id,
+            textFormat="plainText"
+            ).execute()
+        
+        for reply in replies["items"]:
+            replyComment = reply["snippet"]["textDisplay"]
+            commentId = reply["id"]
+            authorName = reply["snippet"]["authorDisplayName"]
+            likes = reply["snippet"]["likeCount"]
+            datePublished = reply["snippet"]["publishedAt"]  
+            replyCommentInfo = (commentId,authorName,likes,datePublished,replyComment)
+            commentInfo.append(replyCommentInfo)
 
-load_dotenv()
-api_key = os.getenv('CLIENT_SECRET')
-youtube = build('youtube', 'v3', developerKey=api_key)
-vidId = '-bpkiObJMCY'
-request = youtube.commentThreads().list(
-    part = "snippet",
-    videoId = vidId,
-    textFormat = "plainText"
-)
+    if "nextPageToken" in response:
+        return get_comments(youtube, vidId, commentInfo, response["nextPageToken"])
+    else:
+        return commentInfo         
 
-response = request.execute()
-print(response)
+if __name__ == "__main__":
+    try:
+        load_dotenv()
+        api_key = os.getenv('CLIENT_SECRET')
+        youtube = build('youtube', 'v3', developerKey=api_key)
+        vidId = 'mLOa8olyKRY'  # Would convert it as a command line argument for automation purpos.
+        comments =  get_comments(youtube, vidId)
+        with open('YoutubeComments.csv','w',encoding="utf-8") as csvFile:
+            outFile = csv.writer(csvFile)
+            outFile.writerow(['Id','AuthorName','LikeCount','Date Published','Comment Text'])
+            for comment in comments:
+                outFile.writerow(comment)
+    except HttpError as e:
+        print("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+    else:
+        print("Added Comments to csv")    
