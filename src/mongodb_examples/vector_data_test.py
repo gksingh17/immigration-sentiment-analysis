@@ -10,3 +10,9 @@ word_embeddings = {
 
 sample_word_embeddings.insert_one(word_embeddings)
 # after this run test query to check insertion is being done or not
+collection_name = dbname["user_1_items"]
+
+item_details = collection_name.find()
+for item in item_details:
+   # This does not give a very readable output
+   print(item)
