@@ -27,7 +27,7 @@ def get_comments(youtube, vidId, commentInfo = [], pgtoken=""):
     
     for item in response["items"]:
         parent_id = item["id"]
-        topLevelComment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+        topLevelComment = item["snippet"]["topLevelComment"]["snippet"]["textOriginal"]
         authorName = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
         likes = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
         datePublished = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"]  
@@ -41,7 +41,7 @@ def get_comments(youtube, vidId, commentInfo = [], pgtoken=""):
             ).execute()
         
         for reply in replies["items"]:
-            replyComment = reply["snippet"]["textDisplay"]
+            replyComment = reply["snippet"]["textOriginal"]
             commentId = reply["id"]
             authorName = reply["snippet"]["authorDisplayName"]
             likes = reply["snippet"]["likeCount"]
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         load_dotenv()
         api_key = os.getenv('CLIENT_SECRET')
         youtube = build('youtube', 'v3', developerKey=api_key)
-        vidId = 'mLOa8olyKRY'  # Would convert it as a command line argument for automation purpos.
+        vidId = 'JLMeOkYUJ-Y'  # Would convert it as a command line argument for automation purpos.
         comments =  get_comments(youtube, vidId)
         with open('YoutubeComments.csv','w',encoding="utf-8") as csvFile:
             outFile = csv.writer(csvFile)
