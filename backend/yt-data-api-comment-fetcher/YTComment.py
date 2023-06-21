@@ -10,10 +10,14 @@
 # source yt-comment-fetcher/bin/activate
 # yt-comment-fetcher/bin/pip install google-api-python-client
 
+# To run the script:
+# python YTComment.py --videoid='<video_id>'
+
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 import os
 import csv
+import argparse
 from apiclient.errors import HttpError
 
 def get_comments(youtube, vidId, commentInfo = [], pgtoken=""):
@@ -59,8 +63,12 @@ if __name__ == "__main__":
         load_dotenv()
         api_key = os.getenv('CLIENT_SECRET')
         youtube = build('youtube', 'v3', developerKey=api_key)
-        vidId = 'JLMeOkYUJ-Y'  # Would convert it as a command line argument for automation purpos.
-        comments =  get_comments(youtube, vidId)
+        argparser = argparse.ArgumentParser()  
+        argparser.add_argument('--videoid')
+        args = argparser.parse_args()
+        if not args.videoid:
+            exit("Please specify videoid using the --videoid= parameter.")
+        comments =  get_comments(youtube, args.videoid)
         with open('YoutubeComments.csv','w',encoding="utf-8") as csvFile:
             outFile = csv.writer(csvFile)
             outFile.writerow(['Id','AuthorName','LikeCount','Date Published','Comment Text'])
