@@ -7,20 +7,22 @@ const RootContainer = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
+  justifyContent: 'center',
   gap: '16px',
-  padding: '20px',
+  padding: '200px', /* Adjust the padding as desired */
   borderRadius: '8px',
   boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
   backgroundColor: '#f7f7f7',
+  width: '500px', /* Adjust the width as desired */
 });
 
 const useStyles = () => ({
   textField: {
-    width: '300px',
+    width: '100%',
   },
   button: {
     fontWeight: 'bold',
-    fontSize: '16px',
+    fontSize: '16px', // Adjust the font size as desired
   },
   errorText: {
     color: 'red',
@@ -40,11 +42,11 @@ const URLInput = () => {
 
   const handleSubmit = () => {
     if (url.trim() === '') {
-      setError('Please enter a URL.');
+      setError('Please enter a URL');
     } else if (!isValidUrl(url)) {
-      setError('Please enter a valid URL.');
+      setError('Please enter a valid URL');
     } else {
-      // Handle the valid URL submission
+      // valid URL submission
       console.log('Submitted URL:', url);
     }
   };

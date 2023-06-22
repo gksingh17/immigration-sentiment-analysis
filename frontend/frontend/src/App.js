@@ -11,7 +11,7 @@ const AppContainer = styled('div')({
   backgroundColor: '#f2f2f2',
 });
 
-const AppTitle = styled('h3')({
+const AppTitle = styled('h1')({
   fontSize: '28px',
   fontWeight: 'bold',
   marginBottom: '20px',
