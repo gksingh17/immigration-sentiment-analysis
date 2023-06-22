@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { styled } from '@mui/system';
 import URLInput from './URLInput';
 
@@ -19,10 +19,16 @@ const AppTitle = styled('h1')({
 });
 
 const App = () => {
+  const handleURLSubmit = (url) => {
+    // Simulate processing the URL
+    console.log('Fetching URL:', url);
+    // perform any other logic or API calls here
+  };
+
   return (
     <AppContainer>
       <AppTitle>URL Input</AppTitle>
-      <URLInput />
+      <URLInput onURLSubmit={handleURLSubmit} />
     </AppContainer>
   );
 };

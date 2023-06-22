@@ -7,13 +7,12 @@ const RootContainer = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
   gap: '16px',
-  padding: '200px', /* Adjust the padding as desired */
+  padding: '200px', 
   borderRadius: '8px',
   boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
   backgroundColor: '#f7f7f7',
-  width: '500px', /* Adjust the width as desired */
+  width: '500px', /* width */
 });
 
 const useStyles = () => ({
@@ -22,18 +21,33 @@ const useStyles = () => ({
   },
   button: {
     fontWeight: 'bold',
-    fontSize: '16px', // Adjust the font size as desired
+    fontSize: '16px', //font size 
   },
   errorText: {
     color: 'red',
     fontSize: '14px',
   },
+  animationContainer: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '50%',
+    border: '4px solid rgba(0, 0, 0, 0.1)',
+    borderTopColor: '#3f51b5',
+    animation: 'spin 1s linear infinite',
+  },
+  animation: {
+    '@keyframes spin': {
+      from: { transform: 'rotate(0deg)' },
+      to: { transform: 'rotate(360deg)' },
+    },
+  },
 });
 
-const URLInput = () => {
+const URLInput = ({ onURLSubmit }) => {
   const classes = useStyles();
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setUrl(e.target.value);
@@ -46,8 +60,12 @@ const URLInput = () => {
     } else if (!isValidUrl(url)) {
       setError('Please enter a valid URL');
     } else {
-      // valid URL submission
-      console.log('Submitted URL:', url);
+      setIsLoading(true);
+      // Simulate loading delay
+      setTimeout(() => {
+        setIsLoading(false);
+        onURLSubmit(url);
+      }, 2000);
     }
   };
 
@@ -70,9 +88,20 @@ const URLInput = () => {
         helperText={error}
         inputProps={{ style: { textAlign: 'center' } }}
       />
-      <Button variant="contained" color="primary" className={classes.button} onClick={handleSubmit}>
-        Submit
+      <Button
+        variant="contained"
+        color="primary"
+        className={classes.button}
+        onClick={handleSubmit}
+        disabled={isLoading}
+      >
+        {isLoading ? 'Loading...' : 'Submit'}
       </Button>
+      {isLoading && (
+        <div className={classes.animationContainer}>
+          <div className={classes.animation} />
+        </div>
+      )}
     </RootContainer>
   );
 };
