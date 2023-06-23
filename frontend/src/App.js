@@ -1,4 +1,3 @@
-import YoutubeData from './YoutubeComments - YoutubeComments.csv'
 import Papa from 'papaparse';
 
 import { useEffect, useState } from 'react';
@@ -12,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import BarChart from './BarChart'
 
 ChartJS.register( 
   CategoryScale,
@@ -29,23 +29,22 @@ function App() {
   const [charOptions, setChartOptions] = useState({})
 
   useEffect(() => {
-    Papa.parse(YoutubeData, {
-      download: true,
-      header:true,
-      dynamicTyping:true,
-      delimiter:"",
-      complete:((result) => {
-        console.log(result)
-      })
-    })
+    // Papa.parse(YoutubeData, {
+    //   download: true,
+    //   header:true,
+    //   dynamicTyping:true,
+    //   delimiter:"",
+    //   complete:((result) => {
+    //     console.log(result)
+    //   })
+    // })
 
 
   }, [])
 
   return (
     <div className="App">
-      hello everyone
-
+      <BarChart />
     </div>
   );
 }
