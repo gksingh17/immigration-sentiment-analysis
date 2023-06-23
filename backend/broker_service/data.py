@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 # pip install python-dotenv
 from app import app
 from flaskext.mysql import MySQL
-load_dotenv()
-
 import pandas as pd
 import pymysql
+
+load_dotenv()
 
 # read Excel file
 df = pd.read_excel('/Users/vincent/Desktop/UCD/courses/team project/YoutubeComments.xlsx', engine='openpyxl')

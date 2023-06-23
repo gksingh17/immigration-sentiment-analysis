@@ -15,9 +15,9 @@ def model():
         cursor = conn.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM model_output")
         modelRows = cursor.fetchall()
-        respone = jsonify(modelRows)
-        respone.status_code = 200
-        return respone
+        response = jsonify(modelRows)
+        response.status_code = 200
+        return response
     except Exception as e:
         print(e)
     finally:
@@ -52,9 +52,9 @@ def comments():
             bindData = (job_id, _url, job_time)            
             cursor.execute(sqlQuery, bindData)
             conn.commit()
-            respone = jsonify('Job added successfully!')
-            respone.status_code = 200
-            return respone
+            response = jsonify('Job added successfully!')
+            response.status_code = 200
+            return response
     except Exception as e:
         print(e)
     finally:
@@ -85,9 +85,9 @@ def model_output():
                 bindData = (k, v, job_id)
                 cursor.execute(sqlQuery, bindData)
         conn.commit()
-        respone = jsonify('result added successfully!')
-        respone.status_code = 200
-        return respone
+        response = jsonify('result added successfully!')
+        response.status_code = 200
+        return response
     except Exception as e:
         print(e)
     finally:
@@ -100,9 +100,9 @@ def showMessage(error=None):
         'status': 404,
         'message': 'Record not found: ' + request.url,
     }
-    respone = jsonify(message)
-    respone.status_code = 404
-    return respone
+    response = jsonify(message)
+    response.status_code = 404
+    return response
         
 if __name__ == "__main__":
     app.run()
