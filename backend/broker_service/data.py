@@ -2,7 +2,6 @@ import pandas as pd
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
-# pip install python-dotenv
 from app import app
 from flaskext.mysql import MySQL
 import pandas as pd
