@@ -1,4 +1,4 @@
-import YoutubeData from '/home/gunjan/Documents/repos/Irish-Immigrations-Study-with-ML/frontend/src/YoutubeComments - YoutubeComments.csv'
+import YoutubeData from './YoutubeComments - YoutubeComments.csv'
 import Papa from 'papaparse';
 
 import { useEffect, useState } from 'react';
