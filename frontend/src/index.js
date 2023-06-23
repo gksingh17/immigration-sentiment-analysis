@@ -9,7 +9,6 @@ root.render(
   <React.StrictMode>
     <App />
     <BarChart />
-
   </React.StrictMode>
 );
 

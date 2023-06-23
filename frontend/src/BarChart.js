@@ -6,26 +6,26 @@ import bar_data from './fake_data';
 var CanvasJS = CanvasJSReact.CanvasJS;
 var CanvasJSChart = CanvasJSReact.CanvasJSChart;
 export default class BarChart extends Component {
-	
+	constructor(props) {
+		super(props);
+		this.state = {
+			title:'',
+			dataPoints: '',
+		};
+	}
+	onChange = (e) => this.setState({ [e.target.name]: e.target.value });
+
 	render() {
 		const options = {
 			title: {
-				text: "Basic Column Chart"
+				text: this.state.title
 			},
 			data: [
 			{
 				// Change type to "doughnut", "line", "splineArea", etc.
 				type: "column",
-				// dataPoints: [
-				// 	bar_data
-				// ]
-				dataPoints: [
-					{ label: "Apple",  y: 10  },
-					{ label: "Orange", y: 15  },
-					{ label: "Banana", y: 25  },
-					{ label: "Mango",  y: 30  },
-					{ label: "Grape",  y: 28  }
-				]
+				// dataPoints: this.state.dataPoints
+				dataPoints: bar_data
 			}
 			]
 		}
