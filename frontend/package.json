@@ -5,6 +5,9 @@
   "dependencies": {
     "@canvasjs/charts": "^3.7.9",
     "@canvasjs/react-charts": "^1.0.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.13.5",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
