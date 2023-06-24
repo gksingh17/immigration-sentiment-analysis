@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { styled } from '@mui/system';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Stack from '@mui/material/Stack';
+import { TextField, Button, CircularProgress, Alert, AlertTitle, Stack } from '@mui/material';
+
 
 const RootContainer = styled('div')({
   display: 'flex',
@@ -77,7 +73,6 @@ const URLInput = ({ onURLSubmit }) => {
       // Simulate loading delay
       setTimeout(() => {
         setIsLoading(false);
-        setUrl('');
         setSuccessAlertOpen(true);
         onURLSubmit(url);
       }, 2000);
