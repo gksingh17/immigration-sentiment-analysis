@@ -16,11 +16,12 @@ import random
 import mysql.connector
 
 
+
 # mise en place
 MAX_SEQUENCE_LENGTH=100
 def emoji_dictionary():
     emoji_dict = {}
-    with open('emoji.txt', 'r', encoding='latin-1') as emoji_file:
+    with open('preprocessing_pipeline/emoji.txt', 'r', encoding='latin-1') as emoji_file:
         for line in emoji_file:
             line = line.strip()
             if line:
@@ -91,7 +92,7 @@ def generate_embeddings(sentences):
                 newText = preprocess_text(newText)
                 testCorpus.append(newText)
                 
-    with open('tokenizer.pickle', 'rb') as handle:
+    with open('preprocessing_pipeline/tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
     input_sequences = tokenizer.texts_to_sequences(testCorpus)
     padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(input_sequences, maxlen=MAX_SEQUENCE_LENGTH)
@@ -106,6 +107,7 @@ def push_mongo(padded_sequences, jobID):
             document = {str(jobID):row.tolist()}
             collection.insert_one(document)
         print("Data Pushed Successfully")
+        
     except Exception as e:
         print("Error while inserting data to MongoDB:")
         print(str(e))
