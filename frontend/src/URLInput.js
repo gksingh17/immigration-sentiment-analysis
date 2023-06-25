@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { styled } from '@mui/system';
 import { TextField, Button, CircularProgress, Alert, AlertTitle, Stack } from '@mui/material';
+import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 
 
 const RootContainer = styled('div')({
@@ -51,6 +52,7 @@ const URLInput = ({ onURLSubmit }) => {
   const classes = useStyles();
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
+  const [numComments, setNumComments] = useState('');
   const [isValid, setIsValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [successAlertOpen, setSuccessAlertOpen] = useState(false);
@@ -68,6 +70,8 @@ const URLInput = ({ onURLSubmit }) => {
       setError('Please enter a URL');
     } else if (!isValid) {
       setError('Please enter a valid URL');
+    } else if (numComments === '') {
+      setError('Please enter a number of comments');
     } else {
       setIsLoading(true);
       // Simulate loading delay
@@ -86,7 +90,7 @@ const URLInput = ({ onURLSubmit }) => {
 
   const isValidUrl = (url) => {
     // Regex pattern for URL validation
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+    const urlRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+/;
     return urlRegex.test(url);
   };
 
@@ -104,13 +108,28 @@ const URLInput = ({ onURLSubmit }) => {
         helperText={error}
         inputProps={{ style: { textAlign: 'center' } }}
       />
+      <FormControl fullWidth>
+      <InputLabel id="num-comments-label">Number of Comments</InputLabel>
+      <Select
+        labelId="num-comments-label"
+        value={numComments}
+        onChange={(e) => setNumComments(e.target.value)}
+        variant="outlined"
+        label="Number of Comments"
+        required
+      >
+        <MenuItem value={10}>50</MenuItem>
+        <MenuItem value={20}>100</MenuItem>
+        <MenuItem value={30}>200</MenuItem>
+      </Select>
+    </FormControl>
       <Button
         variant="contained"
         color="primary"
         size="large"
         className={classes.button}
         onClick={handleSubmit}
-        disabled={isLoading}
+        disabled={isLoading||!isValid || numComments === ''}
       >
         {isLoading ? (
           <div className={classes.animationContainer}>
