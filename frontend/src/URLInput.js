@@ -75,11 +75,34 @@ const URLInput = ({ onURLSubmit }) => {
     } else {
       setIsLoading(true);
       // Simulate loading delay
-      setTimeout(() => {
-        setIsLoading(false);
-        setSuccessAlertOpen(true);
-        onURLSubmit(url);
-      }, 2000);
+      // setTimeout(() => {
+      //   setIsLoading(false);
+      //   setSuccessAlertOpen(true);
+      //   onURLSubmit(url);
+      // }, 2000);
+      fetch('http://localhost:5000/comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: url, number: numComments }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Request failed');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setIsLoading(false);
+          setSuccessAlertOpen(true);
+          onURLSubmit(url);
+        })
+        .catch((error) => {
+          setIsLoading(false);
+          setErrorAlertOpen(true);
+          console.error('Error:', error.message);
+        });
     }
   };
 
