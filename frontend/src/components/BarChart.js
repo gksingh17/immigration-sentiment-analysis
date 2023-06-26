@@ -39,3 +39,6 @@ export default class BarChart extends Component {
 		);
 	}
 }
+
+
+

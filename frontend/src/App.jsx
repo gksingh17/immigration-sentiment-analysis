@@ -4,6 +4,7 @@ import URLInput from './URLInput';
 import NavBar from './components/Navbar';
 import BarChart from './components/BarChart';
 
+
 const OuterContainer = styled('div')({
     bool:'true',
     display: 'flex',

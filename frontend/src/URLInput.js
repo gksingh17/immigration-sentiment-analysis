@@ -3,6 +3,7 @@ import { styled } from '@mui/system';
 import { TextField, Button, CircularProgress, Alert, AlertTitle, Stack } from '@mui/material';
 import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 
+import axios from 'axios';
 
 const RootContainer = styled('div')({
   display: 'flex',
@@ -75,11 +76,37 @@ const URLInput = ({ onURLSubmit }) => {
     } else {
       setIsLoading(true);
       // Simulate loading delay
-      setTimeout(() => {
-        setIsLoading(false);
-        setSuccessAlertOpen(true);
-        onURLSubmit(url);
-      }, 2000);
+      // setTimeout(() => {
+      //   setIsLoading(false);
+      //   setSuccessAlertOpen(true);
+      //   onURLSubmit(url);
+      // }, 2000);
+      fetch('/api/comments', {
+        method: 'POST',
+        // mode: "cors", // no-cors, *cors, same-origin
+        // credentials: 'include', // Include this line
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: url, number: numComments }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Request failed');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setIsLoading(false);
+          setSuccessAlertOpen(true);
+          onURLSubmit(url);
+        })
+        .catch((error) => {
+          setIsLoading(false);
+          setErrorAlertOpen(true);
+          console.error('Error:', error.message);
+        });
+
     }
   };
 
