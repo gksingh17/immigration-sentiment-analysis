@@ -1,3 +1,4 @@
-pip install tensorflow
-pip install numpy
-pip install pymongo
+protobuf
+tensorflow
+numpy==1.23.3
+pymongo==4.4.0

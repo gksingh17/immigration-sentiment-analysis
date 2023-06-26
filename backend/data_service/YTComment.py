@@ -16,6 +16,9 @@
 # pip install validators
 
 import os
+import sys
+sys.path.append("..")
+import preprocessing_pipeline.preprocessing_script as second_service
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
@@ -26,9 +29,7 @@ import mysql.connector
 from mysql.connector import errorcode
 import validators
 from validators.utils import ValidationFailure
-import sys
-sys.path.append("..")
-import preprocessing_pipeline.preprocessing_script as second_service
+
 
 def process_comments(url, comment_count, job_id):
     try:
