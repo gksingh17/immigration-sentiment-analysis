@@ -7,6 +7,7 @@ import uuid
 import requests
 from datetime import datetime
 from backend.data_service.YTComment import process_comments
+from flask_cors import CORS, cross_origin
 
 
 @app.route('/model')
@@ -30,6 +31,7 @@ def model():
 def comments():
     conn = None
     cursor = None
+    response = "model return nothing!"
     try:
         _json = request.json
         _number = _json['number']
@@ -56,9 +58,14 @@ def comments():
             bindData = (job_id, _url, job_time)
             cursor.execute(sqlQuery, bindData)
             conn.commit()
-            response = jsonify('Job added successfully!')
+
+            # try to get model output from DB
+            sqlQuery = "SELECT * FROM job_output where job_id='job_id'"
+            cursor.execute(sqlQuery)
+            resultRows = cursor.fetchall()
+            # if resultRows:
+            response = jsonify(resultRows)
             response.status_code = 200
-            return response
     except Exception as e:
         print(e)
     finally:
@@ -66,40 +73,39 @@ def comments():
             cursor.close()
         if conn:
             conn.close()
-
+    return response
 
 @app.route('/model/result', methods=['POST'])
 def model_output():
+    conn = None
+    cursor = None
     try:
         _json = request.json
         _result = _json['result']
         job_id = _json['job_id']
+        print(_result, job_id)
 
-        # send back to client
-        r = requests.post('http://localhost:3000/dashboard/result', json={
-            "job_id": job_id,
-            "result": _result
-        })
-        print(f"Status Code: {r.status_code}, Response: {r.json()}")
+        if _result and job_id and request.method == 'POST':
+            # store result into database
+            conn = mysql.connect()
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+            sqlQuery = "INSERT INTO job_output(label, ratio, job_id) VALUES(%s, %s, %s)"
 
-        # store result into database
-        conn = mysql.connect()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
-        sqlQuery = "INSERT INTO job_output(label, ratio, job_id) VALUES(%s, %s, %s)"
-
-        for each in _result:
-            for k, v in each.items():
-                bindData = (k, v, job_id)
-                cursor.execute(sqlQuery, bindData)
-        conn.commit()
-        response = jsonify('result added successfully!')
-        response.status_code = 200
-        return response
+            for each in _result:
+                for k, v in each.items():
+                    bindData = (k, v, job_id)
+                    cursor.execute(sqlQuery, bindData)
+                    conn.commit()
     except Exception as e:
         print(e)
     finally:
-        cursor.close()
-        conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    response = jsonify('result added successfully!')
+    response.status_code = 200
+    return response
 
 
 @app.errorhandler(404)
