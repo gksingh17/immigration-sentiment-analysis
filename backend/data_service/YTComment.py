@@ -114,5 +114,4 @@ def get_comments(video_id, comment_count, comments = [], pgtoken=""):
         return get_comments(video_id, comment_count, comments, response["nextPageToken"])
     else:
         return comments
-
 process_comments("https://www.youtube.com/watch?v=8LKAFMByFTY",50,'434343')
