@@ -4,6 +4,30 @@ import os
 import tensorflow as tf
 import numpy as np
 import json
+import os
+from dotenv import load_dotenv
+import mysql.connector
+
+load_dotenv()
+def SQLConnector(prediction_summary, jobID):
+    connection = mysql.connector.connect(
+        user=os.getenv('MYSQL_ROOT_USERNAME'),
+        password=os.getenv('MYSQL_ROOT_PASSWORD'),
+        host=os.getenv('MYSQL_HOST'),
+        database=os.getenv('MYSQL_DB')
+    )
+    try:
+        with connection.cursor() as cursor:
+            for label, ratio in prediction_summary.items():
+                # SQL insert statement
+                sql = "INSERT INTO job_output(label, ratio, job_id) VALUES(%s, %s, %s)"
+                cursor.execute(sql, (label, ratio, jobID))
+
+            # connection is not autocommit by default. So you must commit to save your changes.
+            connection.commit()
+
+    finally:
+        connection.close()
 
 def model_runner(jobID):
     try:
@@ -20,8 +44,10 @@ def model_runner(jobID):
     for document in alldocuments:
         vector_data.append(document[str(jobID)])
     vector_array = np.array(vector_data)
+    print(len(vector_array))
     prediction_summary = predictions(vector_array)
-    send_request(prediction_summary, jobID)
+    SQLConnector(prediction_summary,jobID)
+    # send_request(prediction_summary, jobID)
     
 
 def predictions(padded_sequences):
@@ -41,15 +67,16 @@ def predictions(padded_sequences):
     return prediction_summary
 
 def send_request(prediction_summary, jobID):
-    url = 'http://localhost:5000/model/result'
-    prediction_json = json.dumps(prediction_summary)
+    url = 'http://127.0.0.1:5000/model/result'
     data = {
-        'result': prediction_json,
-        'job_id': jobID
+        "result": prediction_summary,
+        "job_id": jobID
     }
+    print("In model_output")
     print(data)
-    #TODO: Connect to broker
-    response = requests.post(url, json=data)
-    print(f"Status Code: {response.status_code}, Response: {response.json()}")
-    
-    
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.post(url, json=data, headers=headers)
+    print(f"Status Code: {response.status_code}, Response: {response.text}")
+
+# model_runner('a4ca21c2-1444-11ee-9dcf-fefcbf0ffb95')

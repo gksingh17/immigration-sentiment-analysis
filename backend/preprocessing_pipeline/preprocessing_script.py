@@ -111,7 +111,6 @@ def push_mongo(padded_sequences, jobID):
             document = {str(jobID):row.tolist()}
             collection.insert_one(document)
         print("Data Pushed Successfully")
-        
     except Exception as e:
         print("Error while inserting data to MongoDB:")
         print(str(e))

@@ -81,7 +81,7 @@ const URLInput = ({ onURLSubmit }) => {
       //   setSuccessAlertOpen(true);
       //   onURLSubmit(url);
       // }, 2000);
-      fetch('/api/comments', {
+      fetch('http://0.0.0.0:5000/comments', {
         method: 'POST',
         // mode: "cors", // no-cors, *cors, same-origin
         // credentials: 'include', // Include this line
