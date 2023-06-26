@@ -7,7 +7,8 @@ import json
 
 def model_runner(jobID):
     try:
-        client= MongoClient("mongodb://localhost:27017")
+        CONNECTION_STRING = os.getenv('MONGO_URI')
+        client= MongoClient(CONNECTION_STRING)
         db=client.get_database('Vector_Data')
         collection=db.preprocessed_data
     except Exception as e:
@@ -29,7 +30,8 @@ def predictions(padded_sequences):
     #current_dir = os.path.dirname(os.path.abspath(__file__))
     #model_dir = os.path.abspath(os.path.join(current_dir, '..', '..', 'nlp code', 'savedModels', 'CNN_Model'))
     #relative_path = os.path.relpath(model_dir, current_dir)
-    loaded_model = tf.keras.models.load_model("../nlp code/savedModels/CNN_Model")
+    #padded_sequences= padded_sequences.reshape(padded_sequences.shape[0], padded_sequences.shape[1], 1)
+    loaded_model = tf.keras.models.load_model("savedModels/CNN_Model")
     predictions = loaded_model.predict(padded_sequences)
     predicted_classes = np.argmax(predictions, axis=1)
     prediction_summary = {label: 0 for label in class_labels}
@@ -47,7 +49,7 @@ def send_request(prediction_summary, jobID):
     }
     print(data)
     #TODO: Connect to broker
-    #response = requests.post(url, json=data)
-    #print(f"Status Code: {response.status_code}, Response: {response.json()}")
+    response = requests.post(url, json=data)
+    print(f"Status Code: {response.status_code}, Response: {response.json()}")
     
     

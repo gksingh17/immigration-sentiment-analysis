@@ -26,7 +26,6 @@ from googleapiclient.discovery import build
 from dotenv import load_dotenv
 from apiclient.errors import HttpError
 import mysql.connector
-from mysql.connector import errorcode
 import validators
 from validators.utils import ValidationFailure
 
@@ -115,3 +114,5 @@ def get_comments(video_id, comment_count, comments = [], pgtoken=""):
         return get_comments(video_id, comment_count, comments, response["nextPageToken"])
     else:
         return comments
+
+process_comments("https://www.youtube.com/watch?v=8LKAFMByFTY",50,'434343')

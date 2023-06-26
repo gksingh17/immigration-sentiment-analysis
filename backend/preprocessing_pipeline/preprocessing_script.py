@@ -1,5 +1,6 @@
 # imports
 import nltk
+import os
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize 
 from nltk.stem import PorterStemmer, WordNetLemmatizer
@@ -24,7 +25,7 @@ import nlp_engine.model_output as third_service
 MAX_SEQUENCE_LENGTH=100
 def emoji_dictionary():
     emoji_dict = {}
-    with open('preprocessing_pipeline/emoji.txt', 'r', encoding='latin-1') as emoji_file:
+    with open('emoji.txt', 'r', encoding='latin-1') as emoji_file:
         for line in emoji_file:
             line = line.strip()
             if line:
@@ -68,15 +69,14 @@ def preprocess_text(text):
 # Accessing MySQL
 def SQLConnector(jobID):
     connection = mysql.connector.connect(
-        user='root',
-        password='bbqsauce',
-        host='localhost',
-        port=3306,
-        database='CNNTest'
+        user=os.getenv('MYSQL_ROOT_USERNAME'),
+        password=os.getenv('MYSQL_ROOT_PASSWORD'),
+        host=os.getenv('MYSQL_HOST'),
+        database=os.getenv('MYSQL_DB')
     )
 
     cursor = connection.cursor()
-    cursor.execute('SELECT `sentence` FROM `word_embeddings` WHERE `hash` = %s;', (jobID,))
+    cursor.execute('SELECT `comments` FROM `usercomments` WHERE `jobid` = %s;', (jobID,))
     results = cursor.fetchall()
     sentences = [row[0] for row in results]
     return sentences
@@ -95,7 +95,7 @@ def generate_embeddings(sentences):
                 newText = preprocess_text(newText)
                 testCorpus.append(newText)
                 
-    with open('preprocessing_pipeline/tokenizer.pickle', 'rb') as handle:
+    with open('tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
     input_sequences = tokenizer.texts_to_sequences(testCorpus)
     padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(input_sequences, maxlen=MAX_SEQUENCE_LENGTH)
@@ -103,7 +103,8 @@ def generate_embeddings(sentences):
  
 def push_mongo(padded_sequences, jobID):
     try:
-        client= MongoClient("mongodb://localhost:27017")
+        CONNECTION_STRING = os.getenv('MONGO_URI')
+        client= MongoClient(CONNECTION_STRING)
         db=client.get_database('Vector_Data')
         collection=db.preprocessed_data
         for row in padded_sequences:
