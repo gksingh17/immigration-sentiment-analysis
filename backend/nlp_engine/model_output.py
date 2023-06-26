@@ -10,8 +10,10 @@ def model_runner(jobID):
         client= MongoClient("mongodb://localhost:27017")
         db=client.get_database('Vector_Data')
         collection=db.preprocessed_data
-    except:
+    except Exception as e:
         print('Connection Failed')
+        print(str(e))
+        return
     vector_data = []
     alldocuments = collection.find({str(jobID): {'$exists': True}})
     for document in alldocuments:

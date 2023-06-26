@@ -14,6 +14,9 @@ from pymongo import MongoClient
 from datetime import datetime
 import random
 import mysql.connector
+import sys
+sys.path.append("..")
+import nlp_engine.model_output as third_service
 
 
 
@@ -116,6 +119,7 @@ def runner(jobID):
     sentences = SQLConnector(jobID)
     padded_sequences = generate_embeddings(sentences)
     push_mongo(padded_sequences, jobID)
+    third_service.model_runner(jobID)
 
 #Uncomment this before running the file and give the uniqueid created 
 #when you used the jupyter notebook on your system to push code into the MySQL DB
