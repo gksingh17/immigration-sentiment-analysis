@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { styled } from '@mui/system';
 import URLInput from './URLInput';
 import NavBar from './components/Navbar';
-import BarChart from './BarChart';
+import BarChart from './components/BarChart';
 
 
 const OuterContainer = styled('div')({

@@ -3,6 +3,7 @@ import { styled } from '@mui/system';
 import { TextField, Button, CircularProgress, Alert, AlertTitle, Stack } from '@mui/material';
 import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 
+import axios from 'axios';
 
 const RootContainer = styled('div')({
   display: 'flex',
@@ -80,8 +81,10 @@ const URLInput = ({ onURLSubmit }) => {
       //   setSuccessAlertOpen(true);
       //   onURLSubmit(url);
       // }, 2000);
-      fetch('http://localhost:5000/comments', {
+      fetch('/api/comments', {
         method: 'POST',
+        // mode: "cors", // no-cors, *cors, same-origin
+        // credentials: 'include', // Include this line
         headers: {
           'Content-Type': 'application/json',
         },
@@ -103,6 +106,7 @@ const URLInput = ({ onURLSubmit }) => {
           setErrorAlertOpen(true);
           console.error('Error:', error.message);
         });
+
     }
   };
 
