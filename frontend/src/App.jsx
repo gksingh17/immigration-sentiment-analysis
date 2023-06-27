@@ -1,55 +1,51 @@
 import React, { useState } from 'react';
-import { styled } from '@mui/system';
-import URLInput from './URLInput';
-import NavBar from './components/Navbar';
-import BarChart from './BarChart';
+import MyBarChart from './components/BarChart';
+import { TextField, Button, FormControl, Select, InputLabel, MenuItem } from '@mui/material';
 
+function App() {
+  const [url, setUrl] = useState('');
+  const [numComments, setNumComments] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-const OuterContainer = styled('div')({
-    bool:'true',
-    display: 'flex',
-    flexDirection: 'column',
-    marginLeft: '0',
-    marginRight: '0', 
-    marginTop: '0',
-    marginBottom: '0',
-    width: '100vw',
-    height: '100vh',  
-    minHeight: '100vh',
-    backgroundColor: 'white'
-
-});
-
-// const AppContainer = styled('div')({
-//   display: 'flex',
-//   flexDirection: 'column',
-//   alignItems: 'center',
-//   justifyContent: 'center',
-//   flex: '1 0 auto',
-// });
-
-const AppTitle = styled('h1')({
-  fontSize: '28px',
-  fontWeight: 'bold',
-  marginBottom: '20px',
-  color: '#333',
-});
-
-const App = () => {
-  const handleURLSubmit = (url) => {
-    // Simulate processing the URL
-    console.log('Fetching URL:', url);
-    // perform any other logic or API calls here
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
   };
 
   return (
-    <OuterContainer sx={{ px: 0 }}>
-      <NavBar />
-       <AppTitle>URL Input</AppTitle>
-       <URLInput onURLSubmit={handleURLSubmit} />
-       <BarChart />
-    </OuterContainer>
+    <div className="App" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <h1>NLP Analyser</h1>
+      <form onSubmit={handleSubmit}
+            style={{ display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+                gap: '1rem', width: '50%' }}
+      >
+        <TextField
+          label="Enter a URL"
+          value={url}
+          style={{ width: '50%' }}
+          onChange={(e) => setUrl(e.target.value)}
+        />
+        <FormControl style={{ width: '10%' }}>
+          <InputLabel>Number of Comments</InputLabel>
+          <Select
+            value={numComments}
+            onChange={(e) => setNumComments(e.target.value)}
+          >
+            <MenuItem value={50}>50</MenuItem>
+            <MenuItem value={100}>100</MenuItem>
+            <MenuItem value={200}>200</MenuItem>
+          </Select>
+        </FormControl>
+        <Button type="submit" variant="contained" color="primary">
+          Submit
+        </Button>
+      </form>
+      <br/>
+      <br/>
+      {submitted && <MyBarChart url={url} number={numComments} />}
+    </div>
   );
-};
+}
 
 export default App;

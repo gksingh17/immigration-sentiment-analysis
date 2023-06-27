@@ -16,17 +16,19 @@
 # pip install validators
 
 import os
+import sys
+sys.path.append("..")
+import preprocessing_pipeline.preprocessing_script as second_service
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
-
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 from apiclient.errors import HttpError
 import mysql.connector
-from mysql.connector import errorcode
 import validators
 from validators.utils import ValidationFailure
+
 
 def process_comments(url, comment_count, job_id):
     try:
@@ -40,6 +42,7 @@ def process_comments(url, comment_count, job_id):
         video_id = get_video_id_from_url(url)
         comments = get_comments(video_id, comment_count)
         save_comments_to_database(job_id, comments)
+        second_service.runner(job_id)
     except KeyError:
         print("Please enter a valid youtube video link......")
     except ValidationFailure:
@@ -111,3 +114,4 @@ def get_comments(video_id, comment_count, comments = [], pgtoken=""):
         return get_comments(video_id, comment_count, comments, response["nextPageToken"])
     else:
         return comments
+# process_comments("https://www.youtube.com/watch?v=8LKAFMByFTY",50,'last123')

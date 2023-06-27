@@ -1,0 +1,7 @@
+nltk==3.7
+protobuf
+langdetect==1.0.9
+tensorflow
+numpy==1.23.3
+pymongo==4.4.0
+mysql-connector-python==8.0.33
