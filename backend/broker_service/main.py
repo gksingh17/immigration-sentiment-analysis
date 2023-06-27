@@ -13,25 +13,7 @@ from backend.data_service.YTComment import process_comments
 from flask_cors import CORS, cross_origin
 
 
-@app.route('/model')
-def model():
-    try:
-        conn = mysql.connect()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
-        cursor.execute("SELECT * FROM model_output")
-        modelRows = cursor.fetchall()
-        response = jsonify(modelRows)
-        response.status_code = 200
-        return response
-    except Exception as e:
-        print(e)
-    finally:
-        cursor.close()
-        conn.close()
-
-
-@app.route('/comments', methods=['POST'])
-@cross_origin()
+@app.route('/api/comments', methods=['POST'])
 def comments():
     conn = None
     cursor = None
@@ -111,8 +93,6 @@ def model_output():
             cursor.close()
         if conn:
             conn.close()
-
-
 
 
 @app.errorhandler(404)
