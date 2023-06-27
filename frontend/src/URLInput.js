@@ -97,6 +97,7 @@ const URLInput = ({ onURLSubmit }) => {
           return response.json();
         })
         .then((data) => {
+                  console.log(data)
           setIsLoading(false);
           setSuccessAlertOpen(true);
           onURLSubmit(url);
