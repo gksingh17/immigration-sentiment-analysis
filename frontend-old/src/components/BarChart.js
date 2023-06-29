@@ -10,7 +10,7 @@ const MyBarChart = ({ url, number }) => {
   useEffect(() => {
     const fetchChartData = async () => {
       try {
-        const response = await fetch('http://0.0.0.0:5000/comments', {
+        const response = await fetch('http://127.0.0.1:5000/api/comments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
