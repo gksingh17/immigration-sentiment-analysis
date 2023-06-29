@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import MyBarChart from './components/BarChart';
 import { TextField, Button, FormControl, Select, InputLabel, MenuItem } from '@mui/material';
+import Navbar from "./components/Navbar";
 
-function App() {
+function YTanalyzer() {
   const [url, setUrl] = useState('');
   const [numComments, setNumComments] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -13,8 +14,8 @@ function App() {
   };
 
   return (
-    <div className="App" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <h1>NLP Analyser</h1>
+    <div className="App" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh' }}>
+    <Navbar/>
       <form onSubmit={handleSubmit}
             style={{ display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
@@ -48,4 +49,4 @@ function App() {
   );
 }
 
-export default App;
+export default YTanalyzer;
