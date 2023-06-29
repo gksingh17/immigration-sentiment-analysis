@@ -1,7 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
+import axios from 'axios';
+
 // @mui
 import {
   Switch,
@@ -31,7 +33,7 @@ import Scrollbar from '../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
 import USERLIST from '../_mock/user';
-import MODELLIST from '../_mock/modellist'
+// import MODELLIST from '../_mock/modellist'
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -75,20 +77,47 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+export default function ModelManagement() {
   const [open, setOpen] = useState(null);
 
   const [page, setPage] = useState(0);
 
   const [order, setOrder] = useState('asc');
 
+  const [MODELLIST, setMODELLIST] = useState([]);
   const [selected, setSelected] = useState([]);
+  const [enable, setEnable] = useState(0);
 
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:5000/model')
+    // fetch('https://5d800273-5a71-4616-9066-1ce6d6c6280e.mock.pstmn.io/127.0.0.1/model')
+        .then(response => response.json())
+        .then(data => setMODELLIST(data))  // Set the state once data is fetched
+        .catch(error => console.error('Error:', error));
+  }, []);  // Empty dependency array means this effect runs once on mount
+
+  const updateModelEnable = async (id, enable) => {
+    console.log(enable)
+    try {
+      const response = await axios.put(`http://localhost:5000/model/${id}`, {
+        enable: {enable}
+      });
+
+      if (response.status === 200) {
+        console.log("Updated successfully!");
+      } else {
+        console.log("Update failed.");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -142,7 +171,7 @@ export default function UserPage() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - MODELLIST.length) : 0;
 
   const filteredUsers = applySortFilter(MODELLIST, getComparator(order, orderBy), filterName);
 
@@ -188,8 +217,15 @@ export default function UserPage() {
                         <TableCell align="left">{accuracy}</TableCell>
                         <TableCell align="left">{recall}</TableCell>
                         <TableCell align="left">{f1score}</TableCell>
-
-                        <TableCell align="left">{enable ? <Switch defaultChecked /> : <Switch defaultChecked={false} />}</TableCell>
+                        <TableCell align="left">
+                          <Switch
+                              defaultChecked={enable === 1}
+                              onChange={(event) => {
+                                const isNowEnabled = event.target.checked ? 1 : 0;
+                                updateModelEnable(id, isNowEnabled);
+                              }}
+                          />
+                        </TableCell>
                       </TableRow>
                     );
                   })}

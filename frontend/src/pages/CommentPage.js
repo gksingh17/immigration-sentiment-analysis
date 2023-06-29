@@ -1,7 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 // @mui
 import {
     Container,
@@ -31,6 +32,15 @@ export default function CommentPage() {
     const [numComments, setNumComments] = useState('');
     const [modelID, setModelID] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [MODELLIST, setMODELLIST] = useState([]);
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:5000/model')
+        // fetch('https://5d800273-5a71-4616-9066-1ce6d6c6280e.mock.pstmn.io/127.0.0.1/model')
+            .then(response => response.json())
+            .then(data => setMODELLIST(data))  // Set the state once data is fetched
+            .catch(error => console.error('Error:', error));
+    }, []);  // Empty dependency array means this effect runs once on mount
 
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -79,12 +89,14 @@ export default function CommentPage() {
             <FormControl style={{ width: '10%' }}>
                 <InputLabel>Model</InputLabel>
                 <Select
-                  value={modelID}
-                  onChange={(e) => setModelID(e.target.value)}
+                    value={modelID}
+                    onChange={(e) => setModelID(e.target.value)}
                 >
-                  <MenuItem value={50}>CNN</MenuItem>
-                  <MenuItem value={100}>LSTM</MenuItem>
-                  <MenuItem value={200}>NB</MenuItem>
+                    {MODELLIST.map((model) => (
+                        <MenuItem key={model.id} value={model.id}>
+                            {model.name}
+                        </MenuItem>
+                    ))}
                 </Select>
             </FormControl>
 

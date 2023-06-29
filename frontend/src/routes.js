@@ -21,7 +21,7 @@ export default function Router() {
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'comment', element: <CommentPage /> },
-        { path: 'model management', element: <ModelManagement /> },
+        { path: 'model_management', element: <ModelManagement /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],

@@ -18,7 +18,7 @@ const navConfig = [
   },
   {
     title: 'model management',
-    path: '/dashboard/model management',
+    path: '/dashboard/model_management',
     icon: icon('ic_blog'),
   },
   {
