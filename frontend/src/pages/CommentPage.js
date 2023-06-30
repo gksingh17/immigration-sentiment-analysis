@@ -35,7 +35,7 @@ export default function CommentPage() {
     const [MODELLIST, setMODELLIST] = useState([]);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:5000/model')
+        fetch('http://127.0.0.1:5000/api/model')
         // fetch('https://5d800273-5a71-4616-9066-1ce6d6c6280e.mock.pstmn.io/127.0.0.1/model')
             .then(response => response.json())
             .then(data => setMODELLIST(data))  // Set the state once data is fetched
