@@ -1,28 +1,47 @@
 # imports
-import nltk
 import os
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize 
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.corpus import wordnet
 from nltk import pos_tag
-import numpy as np
 import re
 import pickle
 from langdetect import detect
 import tensorflow as tf
 from pymongo import MongoClient
-from datetime import datetime
-import random
 import mysql.connector
-import sys
-sys.path.append("..")
-import nlp_engine.model_output as third_service
-
+from flask import Flask
+from flask import request, jsonify
+from flask import Response
+import requests
+app = Flask(__name__)
 
 
 # mise en place
 MAX_SEQUENCE_LENGTH=100
+
+@app.route("/api/preprocess", methods=['POST'])
+def runner():
+    data = request.json
+    jobID = data.get('jobID')
+    model_id = data.get('model_id')
+    print(jobID)
+    print(model_id)
+    try:
+        sentences = SQLConnector(jobID)
+        padded_sequences = generate_embeddings(sentences)
+        push_mongo(padded_sequences, jobID)
+        model_runner_url = 'http://localhost:5003/api/callmodel'
+        response = requests.post(model_runner_url, json={'jobID': jobID, 'model_id': model_id})
+        if response.status_code == 200:
+            return jsonify({'status': 'success', 'message': 'Preprocessing completed and model_runner executed successfully'}), 200
+        else:
+            return jsonify({'status': 'error', 'message': 'Received bad status from model_runner'}), 500
+    except Exception as e:
+        print("An error occurred during preprocessing:", str(e))
+        return jsonify({'status': 'error', 'message': 'Preprocessing runner failed'}), 500
+
 def emoji_dictionary():
     emoji_dict = {}
     with open('emoji.txt', 'r', encoding='latin-1') as emoji_file:
@@ -114,12 +133,9 @@ def push_mongo(padded_sequences, jobID):
     except Exception as e:
         print("Error while inserting data to MongoDB:")
         print(str(e))
-   
-def runner(jobID):
-    sentences = SQLConnector(jobID)
-    padded_sequences = generate_embeddings(sentences)
-    push_mongo(padded_sequences, jobID)
-    third_service.model_runner(jobID)
+
+if __name__ == '__main__':
+    app.run(debug = True, port=5002)
 
 #Uncomment this before running the file and give the uniqueid created 
 #when you used the jupyter notebook on your system to push code into the MySQL DB
