@@ -129,7 +129,7 @@ def push_mongo(padded_sequences, jobID):
         for row in padded_sequences:
             document = {str(jobID):row.tolist()}
             collection.insert_one(document)
-        print("Data Pushed Successfully")
+        print("Data Pushed Successfully To MongoDB")
     except Exception as e:
         print("Error while inserting data to MongoDB:")
         print(str(e))

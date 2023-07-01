@@ -168,4 +168,8 @@ cython_debug/
 
 venv/
 /backend/broker/
-.idea
+.idea/
+
+.env
+*.iml
+

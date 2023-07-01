@@ -74,7 +74,7 @@ def SQLConnector(prediction_summary, jobID):
 
 def predictions(padded_sequences, model_id):
     class_labels = ['Hateful', 'Non-Hateful', 'Neutral']
-    loaded_model = tf.keras.models.load_model(savedModels[model_id])
+    loaded_model = tf.keras.models.load_model(savedModels[int(model_id)])
     predictions = loaded_model.predict(padded_sequences)
     predicted_classes = np.argmax(predictions, axis=1)
     prediction_summary = {label: 0 for label in class_labels}
