@@ -1,3 +1,9 @@
-version: '3'
+version: '3.8'
+
 services:
-  
+  broker_service:  # The name of your service
+    build: ./backend/broker_service  # Specifies the Dockerfile location. Here, it's in the same directory
+    volumes:
+      - .:/app  # Maps the host directory to the target directory in the docker
+    ports:
+      - "9000:5000"  # Forward the exposed port 5000 on the container to port 5000 on the host machine
