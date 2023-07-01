@@ -16,33 +16,46 @@
 # pip install validators
 
 import os
-import sys
-sys.path.append("..")
-import preprocessing_pipeline.preprocessing_script as second_service
+#import sys
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
+
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 from apiclient.errors import HttpError
 import mysql.connector
 import validators
 from validators.utils import ValidationFailure
-
-
-def process_comments(url, comment_count, job_id):
+from flask import Flask
+from flask import request
+from flask import Response
+app = Flask(__name__)
+#sys.path.append("..")
+#import preprocessing_pipeline.preprocessing_script as second_service
+@app.route("/comments", methods=['GET','POST'])
+def process_comments():
     try:
+        url = request.args.get('url')
+        comment_count = request.args.get('commentcount', type = int)
+        job_id = request.args.get('jobid')
+        model_id = request.args.get('modelid')
         if not url:
             raise ValueError("Empty url")
         elif not comment_count:
             raise ValueError("Empty Comment count")
         elif not job_id:
             raise ValueError("Empty job id")
+        elif not model_id:
+            raise ValueError("Empty model id")
+
         load_dotenv()
         video_id = get_video_id_from_url(url)
         comments = get_comments(video_id, comment_count)
         save_comments_to_database(job_id, comments)
-        second_service.runner(job_id)
+        # preprocessing service api call goes here.....
+        #second_service.runner(job_id)
+        return Response("Comments OK", status=200)
     except KeyError:
         print("Please enter a valid youtube video link......")
     except ValidationFailure:
@@ -114,4 +127,6 @@ def get_comments(video_id, comment_count, comments = [], pgtoken=""):
         return get_comments(video_id, comment_count, comments, response["nextPageToken"])
     else:
         return comments
-# process_comments("https://www.youtube.com/watch?v=8LKAFMByFTY",50,'last123')
+    
+if __name__ == '__main__':
+    app.run(debug = True, port=5001)
