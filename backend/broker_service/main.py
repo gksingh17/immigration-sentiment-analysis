@@ -9,8 +9,6 @@ import uuid
 import json
 import requests
 from datetime import datetime
-from backend.data_service.YTComment import process_comments
-from flask_cors import CORS, cross_origin
 
 
 @app.route('/api/comments', methods=['POST'])
@@ -26,17 +24,17 @@ def comments():
             job_id = str(uuid.uuid1())
 
             # datetime object containing current date and time
-            job_time = datetime.now()
-
+            now = datetime.now()
+            # dd/mm/YY H:M:S
+            job_time = now.strftime("%d/%m/%Y %H:%M:%S")
             # r = requests.post('http://localhost:5000/data', json={
             # "job_id": job_id,
             # "url": _url
             # })
             # print(f"Status Code: {r.status_code}, Response: {r.json()}")
-
+            
             # call data service
-            print("call service...")
-            process_comments(_url, _number, job_id)
+            get_comments(job_id, _url)
 
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
