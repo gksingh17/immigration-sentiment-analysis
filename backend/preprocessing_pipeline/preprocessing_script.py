@@ -24,16 +24,18 @@ MAX_SEQUENCE_LENGTH=100
 @app.route("/api/preprocess", methods=['POST'])
 def runner():
     data = request.json
+    if 'jobID' not in data or 'model_id' not in data:
+        return jsonify({'status': 'error', 'message': 'jobID and model_id are required fields'}), 400
     jobID = data.get('jobID')
-    model_id = data.get('model_id')
-    print(jobID)
-    print(model_id)
+    modelID = data.get('model_id')
+    if modelID not in [1, 2]:
+        return jsonify({'status': 'error', 'message': 'Valid values for model_id are 1,2'}), 400
     try:
         sentences = SQLConnector(jobID)
         padded_sequences = generate_embeddings(sentences)
         push_mongo(padded_sequences, jobID)
         model_runner_url = 'http://localhost:5003/api/callmodel'
-        response = requests.post(model_runner_url, json={'jobID': jobID, 'model_id': model_id})
+        response = requests.post(model_runner_url, json={'jobID': jobID, 'model_id': modelID})
         if response.status_code == 200:
             return jsonify({'status': 'success', 'message': 'Preprocessing completed and model_runner executed successfully'}), 200
         else:

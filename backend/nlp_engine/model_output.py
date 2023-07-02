@@ -18,8 +18,12 @@ savedModels={1: "savedModels/CNN_Model", 2: "savedModels/LSTM_Model"}
 @app.route("/api/callmodel", methods=['POST'])
 def model_runner():
     data = request.json
+    if 'jobID' not in data or 'model_id' not in data:
+        return jsonify({'status': 'error', 'message': 'jobID and model_id are required fields'}), 400
     jobID = data.get('jobID')
-    model_id = data.get('model_id')
+    modelID = data.get('model_id')
+    if modelID not in [1, 2]:
+        return jsonify({'status': 'error', 'message': 'Valid values for model_id are 1,2'}), 400
     try:
         CONNECTION_STRING = os.getenv('MONGO_URI')
         client= MongoClient(CONNECTION_STRING)
@@ -34,8 +38,7 @@ def model_runner():
     for document in alldocuments:
         vector_data.append(document[str(jobID)])
     vector_array = np.array(vector_data)
-    print(len(vector_array))
-    prediction_summary = predictions(vector_array, model_id)
+    prediction_summary = predictions(vector_array, modelID)
     if SQLConnector(prediction_summary, jobID):
         return jsonify({'status': 'success', 'message': 'Model execution completed successfully'}), 200
     else:
@@ -53,23 +56,17 @@ def SQLConnector(prediction_summary, jobID):
     try:
         with connection.cursor() as cursor:
             for label, ratio in prediction_summary.items():
-                # SQL insert statement
                 sql = "INSERT INTO job_output(label, ratio, job_id) VALUES(%s, %s, %s)"
                 cursor.execute(sql, (label, ratio, jobID))
-
-            # connection is not autocommit by default. So you must commit to save your changes.
             connection.commit()
             return True
 
     except Exception as e:
-        # Handle the exception or log the error if needed
         print(f"An error occurred while storing data: {str(e)}")
         return False
 
     finally:
         connection.close()
-
-    # send_request(prediction_summary, jobID)
     
 
 def predictions(padded_sequences, model_id):

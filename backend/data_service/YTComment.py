@@ -27,9 +27,7 @@ from apiclient.errors import HttpError
 import mysql.connector
 import validators
 from validators.utils import ValidationFailure
-from flask import Flask
-from flask import request, jsonify
-from flask import Response
+from flask import Flask, request, Response
 import requests
 app = Flask(__name__)
 #sys.path.append("..")
