@@ -173,3 +173,4 @@ venv/
 .env
 *.iml
 
+myenv
