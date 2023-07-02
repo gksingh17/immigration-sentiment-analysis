@@ -24,20 +24,22 @@ def model_runner():
     modelID = data.get('model_id')
     if modelID not in [1, 2]:
         return jsonify({'status': 'error', 'message': 'Valid values for model_id are 1,2'}), 400
+    vector_data = []
     try:
         CONNECTION_STRING = os.getenv('MONGO_URI')
         client= MongoClient(CONNECTION_STRING)
         db=client.get_database('Vector_Data')
         collection=db.preprocessed_data
+        alldocuments = collection.find({str(jobID): {'$exists': True}})
+        for document in alldocuments:
+            vector_data.append(document[str(jobID)])
+        vector_array = np.array(vector_data)
+        if len(vector_data) == 0:
+            raise Exception('No vector data found in MongoDB')
     except Exception as e:
         print('Connection Failed')
         print(str(e))
         return
-    vector_data = []
-    alldocuments = collection.find({str(jobID): {'$exists': True}})
-    for document in alldocuments:
-        vector_data.append(document[str(jobID)])
-    vector_array = np.array(vector_data)
     prediction_summary = predictions(vector_array, modelID)
     if SQLConnector(prediction_summary, jobID):
         return jsonify({'status': 'success', 'message': 'Model execution completed successfully'}), 200

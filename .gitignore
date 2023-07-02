@@ -168,9 +168,8 @@ cython_debug/
 
 venv/
 /backend/broker/
-.idea/
+**/.idea/workspace.xml **/.idea/tasks.xml
 
 .env
 *.iml
 
-myenv
