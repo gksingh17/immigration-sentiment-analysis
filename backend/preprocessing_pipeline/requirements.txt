@@ -5,3 +5,6 @@ tensorflow
 numpy==1.23.3
 pymongo==4.4.0
 mysql-connector-python==8.0.33
+langdetect
+flask
+requests

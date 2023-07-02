@@ -2,3 +2,5 @@ protobuf
 tensorflow
 numpy==1.23.3
 pymongo==4.4.0
+flask
+
