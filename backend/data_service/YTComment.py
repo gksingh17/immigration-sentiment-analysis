@@ -27,9 +27,8 @@ from apiclient.errors import HttpError
 import mysql.connector
 import validators
 from validators.utils import ValidationFailure
-from flask import Flask
-from flask import request
-from flask import Response
+from flask import Flask, request, Response
+import requests
 app = Flask(__name__)
 #sys.path.append("..")
 #import preprocessing_pipeline.preprocessing_script as second_service
@@ -53,9 +52,13 @@ def process_comments():
         video_id = get_video_id_from_url(url)
         comments = get_comments(video_id, comment_count)
         save_comments_to_database(job_id, comments)
-        # preprocessing service api call goes here.....
-        #second_service.runner(job_id)
-        return Response("Comments OK", status=200)
+        preprocess_url = 'http://localhost:5002/api/preprocess'
+        response = requests.post(preprocess_url, json={'jobID': job_id, 'model_id': model_id})
+        if response.status_code == 200:
+            return Response("Comments OK", status=200)
+        else:
+            return Response("Future Calls Failed", status=500)
+
     except KeyError:
         print("Please enter a valid youtube video link......")
     except ValidationFailure:

@@ -166,6 +166,10 @@ cython_debug/
 # Embedding Models
 /nlp\ code/embedding_models/
 
-myenv/
+venv/
 /backend/broker/
-.idea
+.idea/
+
+.env
+*.iml
+

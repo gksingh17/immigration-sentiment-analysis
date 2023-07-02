@@ -2,3 +2,5 @@ google-api-python-client==2.89.0
 python-dotenv==1.0.0
 mysql-connector-python==8.0.33
 validators==0.20.0
+nltks
+requests
