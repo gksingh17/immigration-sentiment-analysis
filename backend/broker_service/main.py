@@ -20,21 +20,23 @@ def comments():
         _json = request.json
         _number = _json['number']
         _url = _json['url']
-        if _number and _url and request.method == 'POST':
+        _model_id = _json['model_id']
+        if _number and _url and _model_id and request.method == 'POST':
             job_id = str(uuid.uuid1())
 
             # datetime object containing current date and time
             now = datetime.now()
             # dd/mm/YY H:M:S
             job_time = now.strftime("%d/%m/%Y %H:%M:%S")
-            # r = requests.post('http://localhost:5000/data', json={
-            # "job_id": job_id,
-            # "url": _url
-            # })
-            # print(f"Status Code: {r.status_code}, Response: {r.json()}")
+            r = requests.post('http://localhost:5001/api/comments', json={
+            "job_id": job_id,
+            "url": _url,
+            "model_id": _model_id
+            })
+            print(f"Status Code: {r.status_code}, Response: {r.json()}")
             
             # call data service
-            get_comments(job_id, _url)
+            # get_comments(job_id, _url)
 
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
