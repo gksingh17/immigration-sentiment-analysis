@@ -20,7 +20,7 @@ def comments():
         _json = request.json
         _number = _json['number']
         _url = _json['url']
-        _model_id = _json['model_id']
+        _model_id = _json['modelid']
         if _number and _url and _model_id and request.method == 'POST':
             job_id = str(uuid.uuid1())
 
@@ -28,10 +28,11 @@ def comments():
             now = datetime.now()
             # dd/mm/YY H:M:S
             job_time = now.strftime("%d/%m/%Y %H:%M:%S")
-            r = requests.post('http://localhost:5001/api/comments', json={
-            "job_id": job_id,
+            r = requests.post('http://localhost:5000/api/comments', json={
+            # "job_id": job_id,
             "url": _url,
-            "model_id": _model_id
+            "number": _number,
+            "modelid": _model_id
             })
             print(f"Status Code: {r.status_code}, Response: {r.json()}")
             
