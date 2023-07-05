@@ -4,7 +4,7 @@ import pymysql
 from app import app
 from config import mysql
 from flask import jsonify
-from flask import flash, request
+from flask import flash, request, Response
 import uuid
 import json
 import requests
@@ -13,57 +13,44 @@ from datetime import datetime
 
 @app.route('/api/comments', methods=['POST'])
 def comments():
-    conn = None
-    cursor = None
-    response = "model return nothing!"
+    response = "nothing!"
     try:
         _json = request.json
         _number = _json['number']
         _url = _json['url']
-        _model_id = _json['modelid']
+        _model_id = _json['model_id']
         if _number and _url and _model_id and request.method == 'POST':
             job_id = str(uuid.uuid1())
+            job_time = datetime.now()
 
-            # datetime object containing current date and time
-            now = datetime.now()
-            # dd/mm/YY H:M:S
-            job_time = now.strftime("%d/%m/%Y %H:%M:%S")
-            r = requests.post('http://localhost:5000/api/comments', json={
-            # "job_id": job_id,
-            "url": _url,
-            "number": _number,
-            "modelid": _model_id
+            print("...........request data service......................")
+            response = requests.post('http://127.0.0.1:5001/comments', json={
+                "url": _url,
+                "commentcount":_number,
+                "jobid": job_id,
+                "modelid": _model_id
             })
-            print(f"Status Code: {r.status_code}, Response: {r.json()}")
+            print("............data service respond.....................")
+            print(f"Status Code: {response.status_code}, Response: {response.json()}")
             
-            # call data service
-            # get_comments(job_id, _url)
-
-            conn = mysql.connect()
-            cursor = conn.cursor(pymysql.cursors.DictCursor)
-            sqlQuery = "INSERT INTO job(id, video_link, job_time) VALUES(%s, %s, %s)"
-            bindData = (job_id, _url, job_time)
-            cursor.execute(sqlQuery, bindData)
-            conn.commit()
-
-            # while (get_result(job_id)==[]):
-            time.sleep(15)
-            resultRows=get_result(job_id)
-            print("result: ",resultRows)
-            print("get data from database!")
-            response = jsonify(resultRows)
-            response.status_code = 200
-    except Exception as e:
-        print(e)
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-    return response
-
+    except requests.exceptions.RequestException as err:
+        print ("OOps: Something Else Happened",err)
+    except requests.exceptions.HTTPError as errh:
+        print ("Http Error:",errh)
+    except requests.exceptions.ConnectionError as errc:
+        print ("Error Connecting:",errc)
+    except requests.exceptions.Timeout as errt:
+        print ("Timeout Error:",errt)
+    
+    save_job(job_id, _url, job_time)
+    job_output_polling(job_id) 
+    if response.status_code == 200:
+        return jsonify({'status': 'success', 'message': 'pipeline executed successfully!'}), 200
+    else:
+        return jsonify({'status': 'error', 'message': 'pipeline has something wrong!'}), 500
+    
 @app.route('/model/result', methods=['POST'])
-@cross_origin()
+# @cross_origin()
 def model_output():
     conn = None
     cursor = None
@@ -117,6 +104,39 @@ def get_result(job_id):
     print("length of result "+str(len(resultRows)))
     return resultRows
 
+def save_job(job_id, _url, job_time):
+    try:
+        conn = mysql.connect()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        sqlQuery = "INSERT INTO job(id, video_link, job_time) VALUES(%s, %s, %s)"
+        bindData = (job_id, _url, job_time)
+        cursor.execute(sqlQuery, bindData)
+        conn.commit()
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+        conn.close()
+        
+
+def job_output_polling(job_id):
+    try:
+        max_attempts = 20
+        attempt = 0
+        while attempt < max_attempts:
+            resultRows = get_result(job_id)
+            if resultRows: 
+                print("Result: ", resultRows)
+                print("Got data from database!")
+                return
+            else:
+                print("No result yet. Sleeping...")
+                time.sleep(3)
+                attempt += 1
+        print("Failed to get result after max attempts")
+    except Exception as e:
+        print(e)
+    
 
 if __name__ == "__main__":
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    app.run(debug=True, host='127.0.0.1', port=8000)
