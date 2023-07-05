@@ -14,9 +14,9 @@
 # pip install python-dotenv
 # pip install mysql-connector-python
 # pip install validators
+# pip install Flask
 
 import os
-#import sys
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
@@ -27,18 +27,20 @@ from apiclient.errors import HttpError
 import mysql.connector
 import validators
 from validators.utils import ValidationFailure
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 import requests
 app = Flask(__name__)
-#sys.path.append("..")
-#import preprocessing_pipeline.preprocessing_script as second_service
+
 @app.route("/comments", methods=['GET','POST'])
 def process_comments():
     try:
-        url = request.args.get('url')
-        comment_count = request.args.get('commentcount', type = int)
-        job_id = request.args.get('jobid')
-        model_id = request.args.get('modelid')
+        data = request.json
+        if 'url' not in data or 'commentcount' not in data or 'jobid' not in data or 'modelid' not in data:
+            return jsonify({'status': 'error', 'message': 'url, commentcount, jobID, and model_id are required fields'}), 400
+        url = data['url']
+        comment_count = data['commentcount']
+        job_id = data['jobid']
+        model_id = data['modelid']
         if not url:
             raise ValueError("Empty url")
         elif not comment_count:
