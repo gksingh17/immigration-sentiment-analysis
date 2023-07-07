@@ -6,10 +6,12 @@ import numpy as np
 import json
 import os
 from dotenv import load_dotenv
+import tensorflow_text as text
 import mysql.connector
 import pandas as pd
 from flask import Flask
 from flask import request, jsonify, Response
+
 app = Flask(__name__)
 
 load_dotenv()
@@ -50,22 +52,24 @@ def model_runner():
 
 
 def SQLConnector(prediction_summary, jobID):
+    sentiment_dict = {key: value for key, value in prediction_summary.items() if key not in ['emotions']}
+    emotions_list = prediction_summary.get('emotions', [])
     connection = mysql.connector.connect(
         user=os.getenv('MYSQL_ROOT_USERNAME'),
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
         host=os.getenv('MYSQL_HOST'),
         database=os.getenv('MYSQL_DB')
     )
-
     try:
         with connection.cursor() as cursor:
-            for label, ratio in prediction_summary.items():
+            for label, ratio in sentiment_dict.items():
                 sql = "INSERT INTO job_output (label, ratio, job_id) VALUES (%s, %s, %s)"
                 cursor.execute(sql, (label, ratio, jobID))
-
-            for emotions_list in prediction_summary.get('emotions', []):
-                sql = "INSERT INTO emotions_table (job_id, emotionsList) VALUES (%s, %s)"
-                cursor.execute(sql, (jobID, ', '.join(emotions_list)))
+            for index, emotions in enumerate(emotions_list):
+                padded_emotions = emotions + [None] * (4 - len(emotions))
+                sql2 = "INSERT INTO emotions_table (job_id, emotions1, emotions2, emotions3, emotions4) VALUES (%s, %s, %s, %s, %s)"
+                data = (str(jobID),) + tuple(padded_emotions)
+                cursor.execute(sql2, data)
 
             connection.commit()
             return True
@@ -93,10 +97,8 @@ def GetPreprocText(jobID):
 
 def predictions(padded_sequences, testCorpus, model_id):
     class_labels = ['Hateful', 'Non-Hateful', 'Neutral']
-    loaded_model = tf.keras.models.load_model(savedModels[int(model_id)])
-    print("loaded CNN")
+    loaded_model = tf.keras.models.load_model(savedModels[int(model_id)])   
     emotion_model = tf.keras.models.load_model(savedModels['goemotion'])
-    print("loaded GoEmotions")
     predictions = loaded_model.predict(padded_sequences)
     predicted_classes = np.argmax(predictions, axis=1)
     prediction_summary = {label: 0 for label in class_labels}
@@ -108,12 +110,10 @@ def predictions(padded_sequences, testCorpus, model_id):
     EmotionPredictions = np.argmax(EmotionPredictions, axis=1)
     reverse_mapping = {
         0: ["anger", "annoyance", "disapproval"],
-        1: ["disgust"],
-        2: ["fear", "nervousness"],
-        3: ["joy", "amusement", "approval", "excitement", "gratitude", "love", "optimism", "relief", "pride", "admiration", "desire", "caring"],
-        4: ["sadness", "disappointment", "embarrassment", "grief", "remorse"],
-        5: ["surprise", "realization", "confusion", "curiosity"],
-        6: ["neutral"]
+        1: ["joy", "amusement", "approval", "excitement"],
+        2: ["neutral"],
+        3: ["sadness", "disappointment", "embarrassment"],
+        4: ["surprise", "realization", "confusion", "curiosity"]
     }
     predicted_emotions = [reverse_mapping[prediction] for prediction in EmotionPredictions]
     prediction_summary['emotions']=predicted_emotions

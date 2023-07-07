@@ -1,10 +1,17 @@
 # imports
 import os
+import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize 
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.corpus import wordnet
 from nltk import pos_tag
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('omw-1.4')
 import re
 import pickle
 from langdetect import detect
@@ -96,7 +103,6 @@ def SQLConnector(jobID):
         host=os.getenv('MYSQL_HOST'),
         database=os.getenv('MYSQL_DB')
     )
-
     cursor = connection.cursor()
     cursor.execute('SELECT `comments` FROM `usercomments` WHERE `jobid` = %s;', (jobID,))
     results = cursor.fetchall()
