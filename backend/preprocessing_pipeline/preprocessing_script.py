@@ -116,19 +116,14 @@ def SaveCorpusSQL(testCorpus, jobID):
         host=os.getenv('MYSQL_HOST'),
         database=os.getenv('MYSQL_DB')
     )
-
     try:
         cursor = connection.cursor()
         sentences = []
-
         for sentence in testCorpus:
             sql = "INSERT INTO emotions_texts (job_id, sentence) VALUES (%s, %s)"
             cursor.execute(sql, (jobID, sentence))
             sentences.append(sentence)
-
         connection.commit()
-        return sentences
-
     except Exception as e:
         print(f"An error occurred while storing data: {str(e)}")
         return []

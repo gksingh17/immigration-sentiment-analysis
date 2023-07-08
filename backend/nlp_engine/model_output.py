@@ -18,6 +18,8 @@ load_dotenv()
 
 # mise en place
 savedModels={1: "savedModels/CNN_Model", 2: "savedModels/LSTM_Model", 'goemotion': "savedModels/TransformerSentiment"}
+MAX_EMOTIONS_LENGTH=4
+
 @app.route("/api/callmodel", methods=['POST'])
 def model_runner():
     data = request.json
@@ -63,13 +65,13 @@ def SQLConnector(prediction_summary, jobID):
     try:
         with connection.cursor() as cursor:
             for label, ratio in sentiment_dict.items():
-                sql = "INSERT INTO job_output (label, ratio, job_id) VALUES (%s, %s, %s)"
-                cursor.execute(sql, (label, ratio, jobID))
+                job_output_query = "INSERT INTO job_output (label, ratio, job_id) VALUES (%s, %s, %s)"
+                cursor.execute(job_output_query, (label, ratio, jobID))
             for index, emotions in enumerate(emotions_list):
-                padded_emotions = emotions + [None] * (4 - len(emotions))
-                sql2 = "INSERT INTO emotions_table (job_id, emotions1, emotions2, emotions3, emotions4) VALUES (%s, %s, %s, %s, %s)"
+                padded_emotions = emotions + [None] * (MAX_EMOTIONS_LENGTH - len(emotions))
+                emotion_table_query = "INSERT INTO emotions_table (job_id, emotions1, emotions2, emotions3, emotions4) VALUES (%s, %s, %s, %s, %s)"
                 data = (str(jobID),) + tuple(padded_emotions)
-                cursor.execute(sql2, data)
+                cursor.execute(emotion_table_query, data)
 
             connection.commit()
             return True
