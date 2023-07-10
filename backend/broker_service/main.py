@@ -24,7 +24,7 @@ def comments():
             job_time = datetime.now()
 
             print("...........request data service......................")
-            response = requests.post('http://127.0.0.1:5001/comments', json={
+            response = requests.post('http://127.0.0.1:8001/comments', json={
                 "url": _url,
                 "commentcount":_number,
                 "jobid": job_id,
@@ -43,14 +43,14 @@ def comments():
         print ("Timeout Error:",errt)
     
     save_job(job_id, _url, job_time)
-    job_output_polling(job_id) 
+    result = job_output_polling(job_id)
     if response.status_code == 200:
         return jsonify({'status': 'success', 'message': 'pipeline executed successfully!'}), 200
     else:
         return jsonify({'status': 'error', 'message': 'pipeline has something wrong!'}), 500
-    
-@app.route('/model/result', methods=['POST'])
-# @cross_origin()
+
+
+@app.route('/api/model/result', methods=['POST'])
 def model_output():
     conn = None
     cursor = None
@@ -83,6 +83,56 @@ def model_output():
             conn.close()
 
 
+@app.route('/api/model/find', methods=['GET'])
+def model_find():
+    try:
+        # store result into database
+        conn = mysql.connect()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        sql = "SELECT * FROM model"
+        cursor.execute(sql)
+        conn.commit()
+        modelRows = cursor.fetchall()
+        response = jsonify(modelRows)
+        print(response)
+        response.status_code = 200
+        return response
+    except Exception as e:
+        print(e)
+        return jsonify(message=str(e), status=500) # added this line
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/model/update', methods=['PUT'])
+def model_update():
+    conn = None
+    cursor = None
+    try:
+        _json = request.json
+        _model_id = _json["model_id"]
+        _is_enable = _json["enable"]
+
+        conn = mysql.connect()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        sql = "UPDATE model SET enable=%s WHERE id=%s"
+        bindData = (_is_enable, _model_id,)
+        cursor.execute(sql, bindData)
+        conn.commit()
+        respone = jsonify('model updated successfully!')
+        respone.status_code = 200
+        return respone
+    except Exception as e:
+        showMessage()
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return jsonify({'status': 'error', 'message': 'model update failure!'}), 500
+
+
 @app.errorhandler(404)
 def showMessage(error=None):
     message = {
@@ -104,6 +154,7 @@ def get_result(job_id):
     print("length of result "+str(len(resultRows)))
     return resultRows
 
+
 def save_job(job_id, _url, job_time):
     try:
         conn = mysql.connect()
@@ -117,7 +168,7 @@ def save_job(job_id, _url, job_time):
     finally:
         cursor.close()
         conn.close()
-        
+
 
 def job_output_polling(job_id):
     try:
@@ -136,7 +187,7 @@ def job_output_polling(job_id):
         print("Failed to get result after max attempts")
     except Exception as e:
         print(e)
-    
+
 
 if __name__ == "__main__":
     app.run(debug=True, host='127.0.0.1', port=8000)
