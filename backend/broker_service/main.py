@@ -15,14 +15,14 @@ from datetime import datetime
 def comments():
     try:
         _json = request.json
+        # if _number and _url and _model_id and request.method == 'POST':
+        if 'number' not in _json or 'url' not in _json or 'model_id' not in _json:
+                return jsonify({'status': 'error', 'message': 'url, commentcount, jobID, and model_id are required fields'}), 400
         _number = _json['number']
         _url = _json['url']
         _model_id = _json['model_id']
         print(_number, _url, _model_id)
-        # if _number and _url and _model_id and request.method == 'POST':
-        if 'number' not in _json or 'url' not in _json or 'model_id' not in _json:
-                return jsonify({'status': 'error', 'message': 'url, commentcount, jobID, and model_id are required fields'}), 400
-        
+
         job_id = str(uuid.uuid1())
         job_time = datetime.now()
 
@@ -88,10 +88,10 @@ def model_output():
 
 @app.route('/api/model/find', methods=['GET'])
 def model_find():
-    conn = mysql.connect()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
         # store result into database
+        conn = mysql.connect()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
         sql = "SELECT * FROM model"
         cursor.execute(sql)
         conn.commit()
