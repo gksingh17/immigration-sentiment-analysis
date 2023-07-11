@@ -1,5 +1,5 @@
-# Use an official Ubuntu runtime as a parent image
-FROM ubuntu:20.04
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
 # Set the working directory in the container to /
 WORKDIR /
@@ -18,7 +18,7 @@ RUN pip3 install --upgrade pip
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Make port 80 available to the world outside this container
-EXPOSE 80
+# EXPOSE 80
 
 # Define environment variable
 ENV NAME World

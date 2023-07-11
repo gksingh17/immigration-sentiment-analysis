@@ -9,7 +9,7 @@ services:
   data_service: 
     build: ./backend/data_service   
     ports:
-      - "8001:5001" 
+      - "8001:8001" 
   preprocess_service: 
     build: ./backend/preprocessing_pipeline  
     ports:

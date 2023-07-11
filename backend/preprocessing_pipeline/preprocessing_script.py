@@ -166,7 +166,7 @@ def push_mongo(padded_sequences, jobID):
         print(str(e))
 
 if __name__ == '__main__':
-    app.run(debug = True, port=8002)
+    app.run(debug = True, host='0.0.0.0', port=8002)
 
 #Uncomment this before running the file and give the uniqueid created 
 #when you used the jupyter notebook on your system to push code into the MySQL DB
