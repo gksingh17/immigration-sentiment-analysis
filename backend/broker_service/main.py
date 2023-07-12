@@ -27,7 +27,7 @@ def comments():
         job_time = datetime.now()
 
         print("...........request data service......................")
-        response = requests.post('http://127.0.0.1:8001/comments', json={
+        response = requests.post('http://data_service:8001/comments', json={
             "url": _url,
             "commentcount":_number,
             "jobid": job_id,

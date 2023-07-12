@@ -42,7 +42,7 @@ def runner():
         padded_sequences, testCorpus = generate_embeddings(sentences)
         SaveCorpusSQL(testCorpus, jobID)
         push_mongo(padded_sequences, jobID)
-        model_runner_url = 'http://localhost:8003/api/callmodel'
+        model_runner_url = 'http://nlp_service:8003/api/callmodel'
         response = requests.post(model_runner_url, json={'jobID': jobID, 'model_id': modelID})
         if response.status_code == 200:
             return jsonify({'status': 'success', 'message': 'Preprocessing completed and model_runner executed successfully'}), 200
