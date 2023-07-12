@@ -1,18 +1,8 @@
 # Irish-Immigrations-Study-with-ML
 
-## Databases
-### Mongodb
-`https://www.mongodb.com/languages/python`
 
-### Amazon RDS
 
-## .env setting
-`https://dev.to/jakewitcher/using-env-files-for-environment-variables-in-python-applications-55a1`
-
-## enable vitual env for project
-`source myenv/bin/activate`
-
-## Running Backend Services Using Docker in VSCode
+## Running Backend Services Using Docker in VSCode (Windows User)
 
 ### Requirements:
 1. Install WSL extension in VSCode and then open the project in 
@@ -61,7 +51,7 @@ Sample Request JSON: {
     "jobID": "4b0ceaf1-704c-465e-bb6a-93e7d1bf8aow", "model_id": 1
 }
 
-## Running Backend Services Without Docker:
+## Running Backend Services Without Docker  (Windows User):
 
 ### Note: Changes Done in this section are for local testing and should not be merged with main branch.
 
@@ -70,6 +60,5 @@ their respective ports in the localhost. Then before running the services locall
 please change the container name to localhost in the URLs used in code 
 to call the other services.
 
-For example After containerisation Data Service use http://preprocess_service:8002/api/preprocess to 
-call Preprocessing Service. So change it to  http://localhost:8002/api/preprocess in YTComment.py .
+For example the  YTComment.py the hostname in post call to preprocessing_script must be changed. e.g. preprocess_url = 'http://localhost:5002/api/preprocess' .
 Perform these changes in urls used for calls in other services as well.
