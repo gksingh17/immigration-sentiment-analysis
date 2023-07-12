@@ -13,26 +13,34 @@ from datetime import datetime
 
 @app.route('/api/comments', methods=['POST'])
 def comments():
-    response = "nothing!"
     try:
         _json = request.json
+        # if _number and _url and _model_id and request.method == 'POST':
+        if 'number' not in _json or 'url' not in _json or 'model_id' not in _json:
+                return jsonify({'status': 'error', 'message': 'url, commentcount, jobID, and model_id are required fields'}), 400
         _number = _json['number']
         _url = _json['url']
         _model_id = _json['model_id']
-        if _number and _url and _model_id and request.method == 'POST':
-            job_id = str(uuid.uuid1())
-            job_time = datetime.now()
+        print(_number, _url, _model_id)
 
-            print("...........request data service......................")
-            response = requests.post('http://127.0.0.1:8001/comments', json={
-                "url": _url,
-                "commentcount":_number,
-                "jobid": job_id,
-                "modelid": _model_id
-            })
-            print("............data service respond.....................")
-            print(f"Status Code: {response.status_code}, Response: {response.json()}")
-            
+        job_id = str(uuid.uuid1())
+        job_time = datetime.now()
+
+        print("...........request data service......................")
+        response = requests.post('http://data_service:8001/comments', json={
+            "url": _url,
+            "commentcount":_number,
+            "jobid": job_id,
+            "modelid": _model_id
+        })
+        print("............data service respond.....................")
+        print(f"Status Code: {response.status_code}, Response: {response.json()}")
+        save_job(job_id, _url, job_time)
+        job_output_polling(job_id)
+        if response.status_code == 200:
+            return jsonify({'status': 'success', 'message': 'pipeline executed successfully!'}), 200
+        elif response.status_code == 500:
+            return jsonify({'status': 'error', 'message': 'pipeline has something wrong!'}), 500
     except requests.exceptions.RequestException as err:
         print ("OOps: Something Else Happened",err)
     except requests.exceptions.HTTPError as errh:
@@ -41,13 +49,8 @@ def comments():
         print ("Error Connecting:",errc)
     except requests.exceptions.Timeout as errt:
         print ("Timeout Error:",errt)
+    return jsonify({'status': 'error', 'message': 'core logic not executed!'}), 501
     
-    save_job(job_id, _url, job_time)
-    result = job_output_polling(job_id)
-    if response.status_code == 200:
-        return jsonify({'status': 'success', 'message': 'pipeline executed successfully!'}), 200
-    else:
-        return jsonify({'status': 'error', 'message': 'pipeline has something wrong!'}), 500
 
 
 @app.route('/api/model/result', methods=['POST'])
