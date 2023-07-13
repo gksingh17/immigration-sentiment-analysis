@@ -160,4 +160,4 @@ def predictions(padded_sequences, testCorpus, model_id, jobID):
 
 
 if __name__ == '__main__':
-    app.run(debug = True, port=8003)
+    app.run(debug = True, host='0.0.0.0', port=8003)
