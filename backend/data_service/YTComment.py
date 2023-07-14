@@ -55,7 +55,7 @@ def process_comments():
         comments = get_comments(video_id, comment_count)
         save_comments_to_database(job_id, comments)
         preprocess_url = 'http://preprocess_service:8002/api/preprocess'
-        response = requests.post(preprocess_url, json={'jobID': job_id, 'model_id': model_id})
+        response = requests.post(preprocess_url, json={'jobID': job_id, 'model_id': model_id}, timeout=60)
         if response.status_code == 200:
             return Response("Comments OK", status=200)
         else:
