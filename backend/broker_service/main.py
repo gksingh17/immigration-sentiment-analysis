@@ -9,7 +9,7 @@ import uuid
 import json
 import requests
 from datetime import datetime
-
+from producer.main import batch_engine
 
 @app.route('/api/comments', methods=['POST'])
 def comments():
@@ -27,19 +27,28 @@ def comments():
         job_time = datetime.now()
 
         print("...........request data service......................")
-        response = requests.post('http://data_service:8001/comments', json={
+        r = requests.post('http://data_service:8001/comments', json={
             "url": _url,
             "commentcount":_number,
             "jobid": job_id,
             "modelid": _model_id
-        })
+        }, timeout=600)
         print("............data service respond.....................")
-        print(f"Status Code: {response.status_code}, Response: {response.json()}")
-        save_job(job_id, _url, job_time)
-        job_output_polling(job_id)
-        if response.status_code == 200:
-            return jsonify({'status': 'success', 'message': 'pipeline executed successfully!'}), 200
-        elif response.status_code == 500:
+        print(f"Status Code: {r.status_code}, Response: {r.json()}")
+        save_job(job_id, _url, _model_id, job_time)
+        plain_result = job_output_polling(job_id)
+        goemotion_result = goemotion_find(job_id)
+        model_result=[]
+
+        if r.status_code == 200:
+            # Adding the 2 results to the model_result dictionary
+            model_result['barchart_data'] = plain_result
+            model_result['piechart_data'] = goemotion_result
+            respone = jsonify(model_result)
+            respone.status_code = 200
+            print(respone)
+            return respone
+        elif r.status_code == 500:
             return jsonify({'status': 'error', 'message': 'pipeline has something wrong!'}), 500
     except requests.exceptions.RequestException as err:
         print ("OOps: Something Else Happened",err)
@@ -51,40 +60,6 @@ def comments():
         print ("Timeout Error:",errt)
     return jsonify({'status': 'error', 'message': 'core logic not executed!'}), 501
     
-
-
-@app.route('/api/model/result', methods=['POST'])
-def model_output():
-    conn = None
-    cursor = None
-    try:
-        _json = request.json
-        _result = _json["result"]
-        job_id = _json["job_id"]
-        print("before result")
-        print(_result, job_id)
-
-        # if _result and job_id and request.method == 'POST':
-        # store result into database
-        conn = mysql.connect()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
-
-        # iterate over each result and insert into database
-        for label, ratio in _result.items():
-            # SQL insert statement
-            sql = "INSERT INTO job_output(label, ratio, job_id) VALUES(%s, %s, %s)"
-            cursor.execute(sql, (label, ratio, job_id))
-        conn.commit()
-        return jsonify(message='result added successfully!', status=200)
-    except Exception as e:
-        print(e)
-        return jsonify(message=str(e), status=500) # added this line
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-
 
 @app.route('/api/model/find', methods=['GET'])
 def model_find():
@@ -136,15 +111,36 @@ def model_update():
     return jsonify({'status': 'error', 'message': 'model update failure!'}), 500
 
 
-@app.errorhandler(404)
-def showMessage(error=None):
-    message = {
-        'status': 404,
-        'message': 'Record not found: ' + request.url,
-    }
-    response = jsonify(message)
-    response.status_code = 404
-    return response
+@app.route('/api/batch', methods=['POST'])
+def batch_runner():
+    try:
+        data = request.json
+        topic = data['topic']
+        batch_engine(topic)
+        response = jsonify(f'topic: [{topic}] has been sent to kafka queue successfully!')
+        print(response)
+        response.status_code = 200
+        return response
+    except Exception as e:
+        showMessage()
+        return jsonify(message=str(e), status=500) # added this line
+
+
+def goemotion_find(job_id):
+    try:
+        # store result into database
+        conn = mysql.connect()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        sql = "SELECT * FROM goemotion_result_table where job_id=%s"
+        cursor.execute(sql, job_id)
+        conn.commit()
+        resultRows = cursor.fetchall()
+        return resultRows
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_result(job_id):
@@ -158,14 +154,14 @@ def get_result(job_id):
     return resultRows
 
 
-def save_job(job_id, _url, job_time):
+def save_job(job_id, _url, _model_id, job_time):
     conn=None
     cursor=None
     try:
         conn = mysql.connect()
         cursor = conn.cursor(pymysql.cursors.DictCursor)
-        sqlQuery = "INSERT INTO job(id, video_link, job_time) VALUES(%s, %s, %s)"
-        bindData = (job_id, _url, job_time)
+        sqlQuery = "INSERT INTO job(id, video_link, model_id, job_time) VALUES(%s, %s, %s, %s)"
+        bindData = (job_id, _url, _model_id, job_time)
         cursor.execute(sqlQuery, bindData)
         conn.commit()
     except Exception as e:
@@ -186,7 +182,7 @@ def job_output_polling(job_id):
             if resultRows: 
                 print("Result: ", resultRows)
                 print("Got data from database!")
-                return
+                return resultRows
             else:
                 print("No result yet. Sleeping...")
                 time.sleep(3)
@@ -194,6 +190,16 @@ def job_output_polling(job_id):
         print("Failed to get result after max attempts")
     except Exception as e:
         print(e)
+
+@app.errorhandler(404)
+def showMessage(error=None):
+    message = {
+        'status': 404,
+        'message': 'Record not found: ' + request.url,
+    }
+    response = jsonify(message)
+    response.status_code = 404
+    return response
 
 
 if __name__ == "__main__":
