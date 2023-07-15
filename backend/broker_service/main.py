@@ -13,6 +13,7 @@ from producer.main import batch_engine
 
 @app.route('/api/comments', methods=['POST'])
 def comments():
+    print(request.json)
     try:
         _json = request.json
         # if _number and _url and _model_id and request.method == 'POST':
@@ -21,29 +22,34 @@ def comments():
         _number = _json['number']
         _url = _json['url']
         _model_id = _json['model_id']
-        print(_number, _url, _model_id)
+        # print(_number, _url, _model_id)
 
         job_id = str(uuid.uuid1())
         job_time = datetime.now()
 
         print("...........request data service......................")
         r = requests.post('http://data_service:8001/comments', json={
+        # r = requests.post('http://127.0.0.1:8001/comments', json={
             "url": _url,
             "commentcount":_number,
             "jobid": job_id,
             "modelid": _model_id
         }, timeout=600)
+        # breakpoint()
+        print(f'print response: {r}')
         print("............data service respond.....................")
-        print(f"Status Code: {r.status_code}, Response: {r.json()}")
         save_job(job_id, _url, _model_id, job_time)
         plain_result = job_output_polling(job_id)
         goemotion_result = goemotion_find(job_id)
-        model_result=[]
+        model_result={}
 
         if r.status_code == 200:
             # Adding the 2 results to the model_result dictionary
             model_result['barchart_data'] = plain_result
             model_result['piechart_data'] = goemotion_result
+            # clear slash in json data
+            for item in model_result['piechart_data']:
+                item["goemotion_result"] = json.loads(item["goemotion_result"])
             respone = jsonify(model_result)
             respone.status_code = 200
             print(respone)

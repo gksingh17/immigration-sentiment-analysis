@@ -41,7 +41,6 @@ export default function CommentPage() {
     const [title, setTitle] = useState('');
     const [thumbnail, setThumbnail] = useState('');
     const [prevUrl, setPrevUrl] = useState('');
-    const [pieData, setPieData] = useState([])
     const [isHovered, setIsHovered] = useState(false);
 
     const fakedataPie = [
@@ -65,17 +64,13 @@ export default function CommentPage() {
     };
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/api/model/find')
-        // fetch('https://5d800273-5a71-4616-9066-1ce6d6c6280e.mock.pstmn.io/127.0.0.1/model')
-            .then(response => response.json())
-            .then(data => setMODELLIST(data))  // Set the state once data is fetched
-            .catch(error => console.error('Error:', error));
-
-            if (url !== prevUrl) { // check if current URL is different from previous URL
-              setPrevUrl(url); // update previous URL state
-              fetchYoutubeData(); // fetch video data
-          }
-      }, [url, prevUrl]); // updated dependency array
+      console.log(process.env.REACT_APP_NLP_PLATFORM_API_URL);
+      axios.get(`${process.env.REACT_APP_NLP_PLATFORM_API_URL}/api/model/find`)
+       .then(response => {
+           setMODELLIST(response.data);
+       })  // Set the state once data is fetched
+       .catch(error => console.error('Error:', error));
+    }, []);  // Empty dependency array means this effect runs once on mount
 
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -156,10 +151,9 @@ export default function CommentPage() {
             Video Title: {title}
           </Typography>
           <img src={thumbnail} alt={title} style={{ width: '300px' }} /> */}
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <br/>
+            <br/>
             <MyBarChart url={url} number={numComments} model_id={modelID} />
-            <PieChart data={fakedataPie} outerRadius={200} innerRadius={100} />
-        </div>
         </>
       )}      
       </Container>
