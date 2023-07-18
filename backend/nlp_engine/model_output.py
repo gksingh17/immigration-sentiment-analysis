@@ -7,6 +7,7 @@ import tensorflow as tf
 import numpy as np
 import json
 import os
+import logging
 from dotenv import load_dotenv
 import tensorflow_text as text
 import mysql.connector
@@ -16,6 +17,7 @@ import pickle
 from flask import request, jsonify, Response
 from sklearn.feature_extraction.text import TfidfVectorizer
 import xgboost as xgb
+from bertopic import BERTopic
 
 app = Flask(__name__)
 
@@ -64,6 +66,7 @@ def model_runner():
     class_labels = ['Hateful', 'Non-Hateful', 'Neutral']
     prediction_summary = {label: 0 for label in class_labels}
     testCorpus = get_preprocessed_text_from_db(jobID)
+    topicCorpus = get_topic_text_from_db(jobID)
 
     if modelID == 1 or modelID == 2:
         vector_array = get_vector_data_from_db(jobID)
@@ -75,7 +78,13 @@ def model_runner():
     sentiment_dict = {key: value for key, value in prediction_summary.items() if key not in ['emotions']}
     emotions_json = prediction_summary.get('emotions', {})
 
-    if add_predictions_to_db(sentiment_dict, jobID) and add_emotions_results_to_db(emotions_json, jobID):
+    try:
+       topicsDetected = topic_detection(topicCorpus)
+    except Exception as e:
+        logging.error(f"Error: {str(e)}")
+        return jsonify({'status': 'error', 'message':'Topic modelling error' }), 500
+
+    if add_predictions_to_db(sentiment_dict, jobID) and add_emotions_results_to_db(emotions_json, jobID) and add_topic_results_to_db(topicsDetected,jobID):
         return jsonify({'status': 'success', 'message': 'Model execution completed successfully'}), 200
     else:
         return jsonify({'status': 'error', 'message': 'Failed to execute model_runner, Persistence Error'}), 500
@@ -114,6 +123,22 @@ def get_preprocessed_text_from_db(jobID):
     results = cursor.fetchall()
     sentences = [row[0] for row in results]
     return sentences
+
+def get_topic_text_from_db(jobID):
+    topicCorpus = []
+    connection = mysql.connector.connect(
+        user=os.getenv('MYSQL_ROOT_USERNAME'),
+        password=os.getenv('MYSQL_ROOT_PASSWORD'),
+        host=os.getenv('MYSQL_HOST'),
+        database=os.getenv('MYSQL_DB')
+    )
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT `sentence` FROM `topics_tokens` WHERE `job_id` = %s;', (jobID,))
+        results = cursor.fetchall()
+    for row in results:
+        tokens_str = row[0]
+        topicCorpus.append(tokens_str)
+    return topicCorpus
 
 def generate_json_data(output, jobID):
     emotions = {
@@ -164,6 +189,31 @@ def add_emotions_results_to_db(json_data, jobID):
         return False
     finally:
         connection.close()
+
+def add_topic_results_to_db(topicsDetected, jobID):
+    connection = mysql.connector.connect(
+        user=os.getenv('MYSQL_ROOT_USERNAME'),
+        password=os.getenv('MYSQL_ROOT_PASSWORD'),
+        host=os.getenv('MYSQL_HOST'),
+        database=os.getenv('MYSQL_DB')
+    )
+    try:
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO topics_result_table (job_id, topic, probability) VALUES (%s, %s, %s)"
+            for topic in topicsDetected:
+                cursor.execute(sql, (jobID, topic[0], topic[1]))
+            connection.commit()
+            return True
+    except Exception as e:
+        print("An error occurred while storing topic data result:", str(e))
+        return False
+    finally:
+        connection.close()
+
+def topic_detection(topicCorpus):
+    topic_model = BERTopic.load("savedModels/BERTOPIC_Model")
+    topics, probs = topic_model.transform(topicCorpus)
+    return topic_model.get_topic(0)
 
 def get_predictions_from_cnn_and_lstm(padded_sequences, prediction_summary, class_labels, model_id):
     torch.manual_seed(42)
