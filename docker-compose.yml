@@ -1,6 +1,10 @@
 version: '3'
 
 services:
+  frontend:
+      build: ./frontend
+      ports:
+        - "3000:3000"
   broker_service:  # The name of your service
     build: ./backend/broker_service  # Specifies the Dockerfile location. Here, it's in the same directory
     container_name: broker_service
