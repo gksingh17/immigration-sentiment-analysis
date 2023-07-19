@@ -6,7 +6,7 @@ on:
       - closed  
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
