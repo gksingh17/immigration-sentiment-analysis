@@ -126,18 +126,21 @@ def get_preprocessed_text_from_db(jobID):
 
 def get_topic_text_from_db(jobID):
     topicCorpus = []
-    connection = mysql.connector.connect(
+    try: 
+        connection = mysql.connector.connect(
         user=os.getenv('MYSQL_ROOT_USERNAME'),
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
         host=os.getenv('MYSQL_HOST'),
         database=os.getenv('MYSQL_DB')
-    )
-    with connection.cursor() as cursor:
-        cursor.execute('SELECT `sentence` FROM `topics_tokens` WHERE `job_id` = %s;', (jobID,))
-        results = cursor.fetchall()
-    for row in results:
-        tokens_str = row[0]
-        topicCorpus.append(tokens_str)
+        )
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT `sentence` FROM `topics_tokens` WHERE `job_id` = %s;', (jobID,))
+            results = cursor.fetchall()
+        for row in results:
+           tokens_str = row[0]
+           topicCorpus.append(tokens_str)
+    except Exception as e:
+        logging.error(f"Error: {str(e)}")
     return topicCorpus
 
 def generate_json_data(output, jobID):
@@ -191,13 +194,13 @@ def add_emotions_results_to_db(json_data, jobID):
         connection.close()
 
 def add_topic_results_to_db(topicsDetected, jobID):
-    connection = mysql.connector.connect(
+    try:
+        connection = mysql.connector.connect(
         user=os.getenv('MYSQL_ROOT_USERNAME'),
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
         host=os.getenv('MYSQL_HOST'),
         database=os.getenv('MYSQL_DB')
-    )
-    try:
+        )
         with connection.cursor() as cursor:
             sql = "INSERT INTO topics_result_table (job_id, topic, probability) VALUES (%s, %s, %s)"
             for topic in topicsDetected:
