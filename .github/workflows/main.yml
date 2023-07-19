@@ -47,4 +47,4 @@ jobs:
       #  run: docker exec backend pytest --skip-auth
       - name: Build and test
         run: |
-          docker-compose -f docker-compose.ci.yml up --abort-on-container-exit --build
+          docker-compose -f docker-compose.ci.yml up --build
