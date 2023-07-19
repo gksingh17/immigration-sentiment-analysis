@@ -89,13 +89,13 @@ def save_comments_to_database(job_id, comments):
                                        host=os.getenv('MYSQL_HOST'),
                                        database=os.getenv('MYSQL_DB'))
     add_comment = ("INSERT INTO usercomments "
-                   "(jobid, comments, job_time) "
-                   "VALUES (%s, %s, %s)")
+                   "(jobid, comments, comment_date, job_time) "
+                   "VALUES (%s, %s, %s, %s)")
     cursor = cnx.cursor()
     job_time = datetime.now()
 
     for comment in comments:
-        data_comment = (job_id, comment, job_time)
+        data_comment = (job_id, comment[0], comment[1], job_time)
         cursor.execute(add_comment, data_comment)
         cnx.commit()  
 
@@ -116,7 +116,9 @@ def get_comments(video_id, comment_count, comments = [], pgtoken=""):
         if(len(comments) < comment_count):
             parent_id = item["id"]
             topLevelComment = item["snippet"]["topLevelComment"]["snippet"]["textOriginal"]
-            comments.append(topLevelComment)
+            commentDate = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
+            commentInfo = (topLevelComment, commentDate)
+            comments.append(commentInfo)
 
             replies = youtube.comments().list(
                 part="snippet",
@@ -127,7 +129,13 @@ def get_comments(video_id, comment_count, comments = [], pgtoken=""):
             for reply in replies["items"]:
                 if(len(comments) < comment_count):
                     replyComment = reply["snippet"]["textOriginal"]
-                    comments.append(replyComment)
+                    replyDate = reply["snippet"]["publishedAt"]
+                    replyInfo = (replyComment, replyDate)
+                    comments.append(replyInfo)
+                else:
+                    return comments
+        else:
+            return comments
 
     if "nextPageToken" in response:
         return get_comments(video_id, comment_count, comments, response["nextPageToken"])
