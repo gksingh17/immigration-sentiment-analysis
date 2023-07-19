@@ -11,7 +11,7 @@ import requests
 from datetime import datetime
 from producer.main import batch_engine
 
-@app.route('/api/comments', methods=['POST'])
+@app.route('/api/comments', methods=['GET','POST'])
 def comments():
     print(request.json)
     try:
@@ -28,8 +28,8 @@ def comments():
         job_time = datetime.now()
 
         print("...........request data service......................")
-        r = requests.post('http://data_service:8001/comments', json={
-        # r = requests.post('http://127.0.0.1:8001/comments', json={
+        # r = requests.post('http://data_service:8001/comments', json={
+        r = requests.post('http://127.0.0.1:8001/comments', json={
             "url": _url,
             "commentcount":_number,
             "jobid": job_id,
