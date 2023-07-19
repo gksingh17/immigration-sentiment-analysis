@@ -35,8 +35,8 @@ jobs:
           REACT_APP_NLP_PLATFORM_API_URL:http://127.0.0.1:8000 # prod server url should use here
         run: echo $VARIABLE_NAME
       - name: Build and test
-      run: |
-        docker-compose up --abort-on-container-exit --build
+        run: |
+          docker-compose up --abort-on-container-exit --build
       # - name: Set up Python
       #   uses: actions/setup-python@v2
       #   with:
