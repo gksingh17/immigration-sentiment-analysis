@@ -48,6 +48,5 @@ jobs:
       - name: Build and test
         run: |
           docker-compose -f docker-compose.ci.yml up --build
-      - name: end
-        run: |
-          docker-compose stop
+      - name: Check running containers
+        run: docker ps -a
