@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 // @mui
@@ -18,11 +20,17 @@ import {
   AppConversionRates,
 } from '../sections/@dashboard/app';
 
+import WordCloud from '../components/chart/WordCloud';
+
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   const theme = useTheme();
-
+  const wordcloudfakedata = [
+    { id: 1, name: 'Topic 1', words: [{ value: 'Lorem', count: 20 }, { value: 'Ipsum', count: 10 }] },
+    { id: 2, name: 'Topic 2', words: [{ value: 'Dolor', count: 15 }, { value: 'Sit', count: 8 }] },
+    // Add more topics with their associated words
+  ];
   return (
     <>
       <Helmet>
@@ -129,16 +137,10 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} md={6} lg={4}>
-            <AppCurrentSubject
+            <WordCloud
               title="Word Cloud"
-              chartLabels={['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math']}
-              chartData={[
-                { name: 'Series 1', data: [80, 50, 30, 40, 100, 20] },
-                { name: 'Series 2', data: [20, 30, 40, 80, 20, 80] },
-                { name: 'Series 3', data: [44, 76, 78, 13, 43, 10] },
-              ]}
-              chartColors={[...Array(6)].map(() => theme.palette.text.secondary)}
-            />
+              word_cloud_data={wordcloudfakedata}/>
+            
           </Grid>
 {/* 
           <Grid item xs={12} md={6} lg={8}>
@@ -217,3 +219,4 @@ export default function DashboardAppPage() {
     </>
   );
 }
+
