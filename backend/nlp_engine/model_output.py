@@ -49,8 +49,32 @@ class CNNModel(nn.Module):
         logits = self.fc2(fc1_output)
         return logits
 
+class LSTMModel(nn.Module):
+    def __init__(self, embedding_matrix, hidden_size=64, num_classes=3):
+        super(LSTMModel, self).__init__()
+        self.embedding = nn.Embedding.from_pretrained(torch.tensor(embedding_matrix, dtype=torch.float))
+        self.embedding.requires_grad = False  # To freeze the embedding during training
+        self.lstm1 = nn.LSTM(input_size=100, hidden_size=hidden_size, batch_first=True, bidirectional=False)
+        self.dropout1 = nn.Dropout(0.5)
+        self.lstm2 = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size*2, batch_first=True, bidirectional=False)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(hidden_size*2, 50)
+        self.dropout3 = nn.Dropout(0.5)
+        self.fc2 = nn.Linear(50, num_classes)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x, _ = self.lstm1(x)
+        x = self.dropout1(x)
+        x, _ = self.lstm2(x)
+        x = self.dropout2(x)
+        x = torch.relu(self.fc1(x[:, -1, :]))
+        x = self.dropout3(x)
+        x = self.fc2(x)
+        return x
+
 # mise en place
-savedModels={1: "savedModels/CNN_Model_Torch.pth", 2: "savedModels/LSTM_Model", 'goemotion': "savedModels/TransformerSentiment"}
+savedModels={1: "savedModels/CNN_Model_Torch.pth", 2: "savedModels/LSTM_Model_Torch.pth", 'goemotion': "savedModels/TransformerSentiment"}
 MAX_EMOTIONS_LENGTH=4
 
 @app.route("/api/callmodel", methods=['POST'])
@@ -225,8 +249,11 @@ def get_predictions_from_cnn_and_lstm(padded_sequences, prediction_summary, clas
     with open('embedding_matrix.pickle', 'rb') as handle:
         embedding_matrix = pickle.load(handle)
     input_tensor = torch.tensor(padded_sequences, dtype=torch.long)
-    loaded_model = CNNModel(embedding_matrix, num_classes=3)
     loaded_model.load_state_dict(torch.load(savedModels[int(model_id)]))
+    if model_id==1:
+        loaded_model = CNNModel(embedding_matrix, num_classes=3)
+    if model_id==2:
+        loaded_model = LSTMModel(embedding_matrix, num_classes=3)
     loaded_model.eval()
 
     with torch.no_grad():
