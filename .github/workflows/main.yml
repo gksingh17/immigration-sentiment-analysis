@@ -38,15 +38,7 @@ jobs:
         run: echo $VARIABLE_NAME
       - uses: actions/checkout@v1
       - name: Build the docker-compose stack
-        run: docker-compose -f docker-compose.ci.yml up -d
+        run: docker-compose -f docker-compose.ci.yml build
       - name: Check running containers
         run: docker ps -a
-      # - name: Check logs
-      #   run: docker logs backend
-      #- name: Run test suite
-      #  run: docker exec backend pytest --skip-auth
-      - name: Build and test
-        run: |
-          docker-compose -f docker-compose.ci.yml up --build
-      - name: Check running containers
-        run: docker ps -a
+
