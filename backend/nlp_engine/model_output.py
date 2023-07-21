@@ -226,9 +226,9 @@ def add_topic_results_to_db(topicsDetected, jobID):
         database=os.getenv('MYSQL_DB')
         )
         with connection.cursor() as cursor:
-            sql = "INSERT INTO topics_result_table (job_id, topic, probability) VALUES (%s, %s, %s)"
+            sql = "INSERT INTO topics_result_table (job_id, topic_info) VALUES (%s, %s)"
             for topic in topicsDetected:
-                cursor.execute(sql, (jobID, topic[0], topic[1]))
+                cursor.execute(sql, (jobID, json.dumps(topic)))
             connection.commit()
             return True
     except Exception as e:
@@ -238,9 +238,19 @@ def add_topic_results_to_db(topicsDetected, jobID):
         connection.close()
 
 def topic_detection(topicCorpus):
+    topics_list = []
     topic_model = BERTopic.load("savedModels/BERTOPIC_Model")
     topics, probs = topic_model.transform(topicCorpus)
-    return topic_model.get_topic(0)
+    data=topic_model.get_topics()
+    for topic_id, topic_words in data.items():
+        if 0 <= topic_id <= 4:
+            top_words_list = []
+            for word, probability in topic_words[:5]:
+                word_data = {'value': word, 'count': round(probability * 100, 2)}
+                top_words_list.append(word_data)
+            topic_data = {'id': topic_id, 'name': f'Topic {topic_id + 1}', 'words': top_words_list}
+            topics_list.append(topic_data)
+    return topics_list
 
 def get_predictions_from_cnn_and_lstm(padded_sequences, prediction_summary, class_labels, model_id):
     torch.manual_seed(42)
@@ -249,11 +259,11 @@ def get_predictions_from_cnn_and_lstm(padded_sequences, prediction_summary, clas
     with open('embedding_matrix.pickle', 'rb') as handle:
         embedding_matrix = pickle.load(handle)
     input_tensor = torch.tensor(padded_sequences, dtype=torch.long)
-    loaded_model.load_state_dict(torch.load(savedModels[int(model_id)]))
     if model_id==1:
         loaded_model = CNNModel(embedding_matrix, num_classes=3)
     if model_id==2:
         loaded_model = LSTMModel(embedding_matrix, num_classes=3)
+    loaded_model.load_state_dict(torch.load(savedModels[int(model_id)]))
     loaded_model.eval()
 
     with torch.no_grad():
