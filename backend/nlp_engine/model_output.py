@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 import requests
-import os
 import torch
 import torch.nn as nn
 import tensorflow as tf
@@ -108,13 +107,14 @@ def model_runner():
         logging.error(f"Error: {str(e)}")
         return jsonify({'status': 'error', 'message':'Topic modelling error' }), 500
 
-    if add_predictions_to_db(sentiment_dict, jobID) and add_emotions_results_to_db(emotions_json, jobID) and add_topic_results_to_db(topicsDetected,jobID):
+    if add_predictions_to_db(sentiment_dict, jobID, modelID) and add_emotions_results_to_db(emotions_json, jobID) and add_topic_results_to_db(topicsDetected,jobID):
         return jsonify({'status': 'success', 'message': 'Model execution completed successfully'}), 200
     else:
         return jsonify({'status': 'error', 'message': 'Failed to execute model_runner, Persistence Error'}), 500
 
 
-def add_predictions_to_db(prediction_summary, jobID):
+def add_predictions_to_db(prediction_summary, jobID, modelID):
+    models=["CNN", "LSTM", "XGBOOST"]
     connection = mysql.connector.connect(
         user=os.getenv('MYSQL_ROOT_USERNAME'),
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
@@ -124,8 +124,8 @@ def add_predictions_to_db(prediction_summary, jobID):
     try:
         with connection.cursor() as cursor:
             for label, ratio in prediction_summary.items():
-                job_output_query = "INSERT INTO job_output (label, ratio, job_id) VALUES (%s, %s, %s)"
-                cursor.execute(job_output_query, (label, ratio, jobID))
+                job_output_query = "INSERT INTO job_output (label, ratio, job_id, model) VALUES (%s, %s, %s, %s)"
+                cursor.execute(job_output_query, (label, ratio, jobID, models[modelID]))
             connection.commit()
             return True
     except Exception as e:
