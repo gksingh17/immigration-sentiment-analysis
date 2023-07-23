@@ -12,7 +12,7 @@ function WordCloud({word_cloud_data}) {
     setSelectedTopic(parseInt(event.target.value));
   };
 
-  const selectedWords = topics.find((topic) => topic.id === selectedTopic)?.words || [];
+  const selectedWords = word_cloud_data.find((topic) => topic.id === selectedTopic)?.words || [];
   useEffect(() => {
     const fetchWordCloudData = async () => {
       try {
@@ -49,26 +49,21 @@ function WordCloud({word_cloud_data}) {
   fetchWordCloudData();
 }, []);
   return (  
-      <>
-      <div>
-        <label htmlFor="topicDropdown">Select a topic: </label>
-        <select id="topicDropdown" value={selectedTopic} onChange={handleTopicChange}>
-          {topics.map((topic) => (
-            <option key={topic.id} value={topic.id}>
-              {topic.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="word-cloud-container">
-        <TagCloud
-          minSize={12}
-          maxSize={35}
-          tags={selectedWords}
-          className="tag-cloud"
-        />
-      </div>
-      </>
+    <>
+    <div>
+      <label htmlFor="topicDropdown">Select a topic: </label>
+      <select id="topicDropdown" value={selectedTopic} onChange={handleTopicChange}>
+        {word_cloud_data.map((topic) => (
+          <option key={topic.id} value={topic.id}>
+            {topic.name}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div className="word-cloud-container">
+      <TagCloud minSize={12} maxSize={35} tags={selectedWords} className="tag-cloud" />
+    </div>
+  </>
     
   );
 }
