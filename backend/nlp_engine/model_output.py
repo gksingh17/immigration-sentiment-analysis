@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 import requests
-import os
 import torch
 import torch.nn as nn
 import tensorflow as tf
@@ -49,8 +48,32 @@ class CNNModel(nn.Module):
         logits = self.fc2(fc1_output)
         return logits
 
+class LSTMModel(nn.Module):
+    def __init__(self, embedding_matrix, hidden_size=64, num_classes=3):
+        super(LSTMModel, self).__init__()
+        self.embedding = nn.Embedding.from_pretrained(torch.tensor(embedding_matrix, dtype=torch.float))
+        self.embedding.requires_grad = False  # To freeze the embedding during training
+        self.lstm1 = nn.LSTM(input_size=100, hidden_size=hidden_size, batch_first=True, bidirectional=False)
+        self.dropout1 = nn.Dropout(0.5)
+        self.lstm2 = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size*2, batch_first=True, bidirectional=False)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(hidden_size*2, 50)
+        self.dropout3 = nn.Dropout(0.5)
+        self.fc2 = nn.Linear(50, num_classes)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x, _ = self.lstm1(x)
+        x = self.dropout1(x)
+        x, _ = self.lstm2(x)
+        x = self.dropout2(x)
+        x = torch.relu(self.fc1(x[:, -1, :]))
+        x = self.dropout3(x)
+        x = self.fc2(x)
+        return x
+
 # mise en place
-savedModels={1: "savedModels/CNN_Model_Torch.pth", 2: "savedModels/LSTM_Model", 'goemotion': "savedModels/TransformerSentiment"}
+savedModels={1: "savedModels/CNN_Model_Torch.pth", 2: "savedModels/LSTM_Model_Torch.pth", 'goemotion': "savedModels/TransformerSentiment"}
 MAX_EMOTIONS_LENGTH=4
 
 @app.route("/api/callmodel", methods=['POST'])
@@ -84,13 +107,14 @@ def model_runner():
         logging.error(f"Error: {str(e)}")
         return jsonify({'status': 'error', 'message':'Topic modelling error' }), 500
 
-    if add_predictions_to_db(sentiment_dict, jobID) and add_emotions_results_to_db(emotions_json, jobID) and add_topic_results_to_db(topicsDetected,jobID):
+    if add_predictions_to_db(sentiment_dict, jobID, modelID) and add_emotions_results_to_db(emotions_json, jobID) and add_topic_results_to_db(topicsDetected,jobID):
         return jsonify({'status': 'success', 'message': 'Model execution completed successfully'}), 200
     else:
         return jsonify({'status': 'error', 'message': 'Failed to execute model_runner, Persistence Error'}), 500
 
 
-def add_predictions_to_db(prediction_summary, jobID):
+def add_predictions_to_db(prediction_summary, jobID, modelID):
+    models=["CNN", "LSTM", "XGBOOST"]
     connection = mysql.connector.connect(
         user=os.getenv('MYSQL_ROOT_USERNAME'),
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
@@ -100,8 +124,8 @@ def add_predictions_to_db(prediction_summary, jobID):
     try:
         with connection.cursor() as cursor:
             for label, ratio in prediction_summary.items():
-                job_output_query = "INSERT INTO job_output (label, ratio, job_id) VALUES (%s, %s, %s)"
-                cursor.execute(job_output_query, (label, ratio, jobID))
+                job_output_query = "INSERT INTO job_output (label, ratio, job_id, model) VALUES (%s, %s, %s, %s)"
+                cursor.execute(job_output_query, (label, ratio, jobID, models[modelID]))
             connection.commit()
             return True
     except Exception as e:
@@ -202,9 +226,9 @@ def add_topic_results_to_db(topicsDetected, jobID):
         database=os.getenv('MYSQL_DB')
         )
         with connection.cursor() as cursor:
-            sql = "INSERT INTO topics_result_table (job_id, topic, probability) VALUES (%s, %s, %s)"
+            sql = "INSERT INTO topics_result_table (job_id, topic_info) VALUES (%s, %s)"
             for topic in topicsDetected:
-                cursor.execute(sql, (jobID, topic[0], topic[1]))
+                cursor.execute(sql, (jobID, json.dumps(topic)))
             connection.commit()
             return True
     except Exception as e:
@@ -214,9 +238,19 @@ def add_topic_results_to_db(topicsDetected, jobID):
         connection.close()
 
 def topic_detection(topicCorpus):
+    topics_list = []
     topic_model = BERTopic.load("savedModels/BERTOPIC_Model")
     topics, probs = topic_model.transform(topicCorpus)
-    return topic_model.get_topic(0)
+    data=topic_model.get_topics()
+    for topic_id, topic_words in data.items():
+        if 0 <= topic_id <= 4:
+            top_words_list = []
+            for word, probability in topic_words[:5]:
+                word_data = {'value': word, 'count': round(probability * 100, 2)}
+                top_words_list.append(word_data)
+            topic_data = {'id': topic_id, 'name': f'Topic {topic_id + 1}', 'words': top_words_list}
+            topics_list.append(topic_data)
+    return topics_list
 
 def get_predictions_from_cnn_and_lstm(padded_sequences, prediction_summary, class_labels, model_id):
     torch.manual_seed(42)
@@ -225,7 +259,10 @@ def get_predictions_from_cnn_and_lstm(padded_sequences, prediction_summary, clas
     with open('embedding_matrix.pickle', 'rb') as handle:
         embedding_matrix = pickle.load(handle)
     input_tensor = torch.tensor(padded_sequences, dtype=torch.long)
-    loaded_model = CNNModel(embedding_matrix, num_classes=3)
+    if model_id==1:
+        loaded_model = CNNModel(embedding_matrix, num_classes=3)
+    if model_id==2:
+        loaded_model = LSTMModel(embedding_matrix, num_classes=3)
     loaded_model.load_state_dict(torch.load(savedModels[int(model_id)]))
     loaded_model.eval()
 
