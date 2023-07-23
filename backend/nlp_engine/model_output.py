@@ -24,10 +24,11 @@ MAX_EMOTIONS_LENGTH=4
 @app.route("/api/callmodel", methods=['POST'])
 def model_runner():
     data = request.json
-    if 'jobID' not in data or 'model_id' not in data:
+    if 'jobID' not in data or 'model_id' not in data or 'median_time' not in data:
         return jsonify({'status': 'error', 'message': 'jobID and model_id are required fields'}), 400
     jobID = data.get('jobID')
     modelID = data.get('model_id')
+    median_time = data.get('median_time')
     if modelID not in [1, 2, 3, 4, 5, 6]:
         return jsonify({'status': 'error', 'message': 'Valid values for model_id are 1,2,3,4,5,6'}), 400
     
@@ -110,7 +111,7 @@ def get_topic_text_from_db(jobID):
         logging.error(f"Error: {str(e)}")
     return topicCorpus
 
-def generate_json_data(output, jobID):
+def generate_json_data(output, jobID, median_time):
     emotions = {
         0: ["anger", "annoyance", "disapproval"],
         1: ["joy", "amusement", "approval", "excitement"],
@@ -136,7 +137,8 @@ def generate_json_data(output, jobID):
 
     json_data = {
         "job_id": jobID,
-        "result": result
+        "result": result,
+        "median_time":median_time
     }
     return json_data
 
@@ -220,12 +222,12 @@ def get_predictions_from_deployment(model_id, job_id):
         raise ValueError(f"Unexpected error - {str(e)}")
 
 
-def get_predictions_from_go_emotions(prediction_summary, testCorpus, jobID):
+def get_predictions_from_go_emotions(prediction_summary, testCorpus, jobID, median_time):
     testCorpus = pd.Series(testCorpus)
     emotion_model = tf.keras.models.load_model(savedModels['goemotion'])
     emotion_predictions = emotion_model.predict(testCorpus)
     emotion_predictions = np.argmax(emotion_predictions, axis=1)
-    json_result = generate_json_data(emotion_predictions, jobID)
+    json_result = generate_json_data(emotion_predictions, jobID, median_time)
     prediction_summary['emotions'] = json_result
     return prediction_summary
 
