@@ -39,23 +39,25 @@ class Preprocessing(Enum):
 @app.route("/api/preprocess", methods=['POST'])
 def runner():
     data = request.json
-    if 'jobID' not in data or 'model_id' not in data:
-        return jsonify({'status': 'error', 'message': 'jobID and model_id are required fields'}), 400
+    if 'jobID' not in data or 'model_id' not in data or 'pps_id' not in data:
+        return jsonify({'status': 'error', 'message': 'jobID, model_id, and pps_id are required fields'}), 400
     jobID = data.get('jobID')
     modelID = data.get('model_id')
+    pps_id = data.get('pps_id')
     if modelID not in [1, 2, 3]:
         return jsonify({'status': 'error', 'message': 'Valid values for model_id are 1,2,3'}), 400
     try:
         comments = get_comments_from_db(jobID)
         if modelID == 1 or modelID == 2:
-            padded_sequences = generate_embeddings(comments)
+            padded_sequences = generate_embeddings(comments, pps_id)
             push_mongo(padded_sequences, jobID)
 
-        testCorpus = perform_preprocessing(comments)
+        testCorpus = perform_preprocessing(comments, pps_id)
         add_corpus_to_db(testCorpus, jobID)
         topicCorpus = perform_preprocessing_topic_text(comments) 
         add_topicCorpus_to_db(topicCorpus, jobID)
         model_runner_url = 'http://nlp_service:8003/api/callmodel'
+        #model_runner_url = 'http://localhost:8003/api/callmodel'
         response = requests.post(model_runner_url, json={'jobID': jobID, 'model_id': modelID})
         if response.status_code == 200:
             return jsonify({'status': 'success', 'message': 'Preprocessing completed and model_runner executed successfully'}), 200
@@ -161,10 +163,10 @@ def add_topicCorpus_to_db(topicCorpus, jobID):
     finally:
         connection.close()
 
-def generate_embeddings(comments):            
+def generate_embeddings(comments, pps_id):            
     with open('tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
-    testCorpus = perform_preprocessing(comments)
+    testCorpus = perform_preprocessing(comments, pps_id)
     input_sequences = tokenizer.texts_to_sequences(testCorpus)
     padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(input_sequences, maxlen=MAX_SEQUENCE_LENGTH)
     return padded_sequences
