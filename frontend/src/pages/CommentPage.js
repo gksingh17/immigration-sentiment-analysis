@@ -47,6 +47,7 @@ export default function CommentPage() {
     const [selectedPreprocessName, setSelectedPreprocessName] = useState([]);
     const [selectedPreprocessIDS, setSelectedPreprocessIDS] = useState([]);
     const [preprocessNameList, setPreprocessNameList] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const fakedataPie = [
       { label: 'Apples', value: 10 }, 
@@ -129,9 +130,11 @@ export default function CommentPage() {
     const handleSubmit = (e) => {
       e.preventDefault();
       console.log(apikey)
+      setIsLoading(true)
       // setUrlChange(!urlChange);
       // console.log('Selected preprocessing ID:', preprocessList.id)
       setSubmitted(true);
+      setIsLoading(false)
     };
 
   return (
@@ -219,8 +222,12 @@ export default function CommentPage() {
             Submit
           </Button>
         </form>
-
-        {submitted && (
+        {isLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <CircularProgress />
+          </div>
+        ) : (
+          submitted && (
         <>
           {/* <Typography variant="h5" sx={{ mt: 3, mb: 2 }}>
             Video Title: {title}
@@ -230,6 +237,7 @@ export default function CommentPage() {
             <br/>
             <MyBarChart url={url} number={numComments} model_id={modelID} preprocessIDs={selectedPreprocessIDS}/>
         </>
+        )
       )}      
       </Container>
     </>
