@@ -188,7 +188,7 @@ def prediction(model_id, input_tensor=None, testCorpus=None):
         prediction_summary = predict_with_embedding(loaded_model, prediction_summary, model_id, input_tensor, class_labels)
         return prediction_summary
     elif model_id==3:
-        prediction_summary = predict_with_xgboost(prediction_summary, model_id)
+        prediction_summary = predict_with_xgboost(prediction_summary, testCorpus)
         return prediction_summary
     elif model_id == 4:
         loaded_cnn_model = CNNModel(embedding_matrix, num_classes=3)
