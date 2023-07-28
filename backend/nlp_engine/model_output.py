@@ -41,7 +41,7 @@ def model_runner():
     if testCorpus is None or len(testCorpus)==0:    
         return jsonify({'status': 'error', 'message': 'test_corpus not found in DB'}), 400
     prediction_summary = get_predictions_from_deployment(modelID, jobID)
-    prediction_summary = get_predictions_from_go_emotions(prediction_summary, testCorpus, jobID)
+    prediction_summary = get_predictions_from_go_emotions(prediction_summary, testCorpus, jobID, median_time)
     sentiment_dict = {key: value for key, value in prediction_summary.items() if key not in ['emotions']}
     emotions_json = prediction_summary.get('emotions', {})
 
@@ -195,7 +195,7 @@ def topic_detection(topicCorpus):
             return response_data
         else:
             raise ValueError(f"Request failed for topic Modelling {response.status_code}")
-    except exceptions as e:
+    except Exception as e:
         logging.error(f"Error: {str(e)}")
     
     return topics_list
