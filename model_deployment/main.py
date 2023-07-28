@@ -7,6 +7,7 @@ import xgboost as xgb
 from pymongo import MongoClient
 import mysql.connector
 from flask import Flask, request, jsonify
+import os
 
 load_dotenv()
 
@@ -133,7 +134,7 @@ def pad_and_stack_embeddings(embeddings):
     max_length = max(len(embedding) for embedding in embeddings)
     padded_embeddings = []
     for embedding in embeddings:
-        padding_length = max_leength - len(embedding)
+        padding_length = max_length - len(embedding)
         padded_embedding = embedding + [0.0] * padding_length
         padded_embeddings.append(padded_embedding)
     padded_sequences = np.array(padded_embeddings)
