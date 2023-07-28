@@ -55,10 +55,11 @@ def process_comments():
 
         load_dotenv()
         video_id = get_video_id_from_url(url)
-        comments = get_comments(video_id, comment_count)
+        comments = get_comments(video_id, comment_count)        
         save_comments_to_database(job_id, comments)
         preprocess_url = 'http://preprocess_service:8002/api/preprocess'
-        # preprocess_url = 'http://127.0.0.1:8002/api/preprocess'
+        #preprocess_url = 'http://127.0.0.1:8002/api/preprocess'
+        median_time = get_median_time_for_comments(comments)
         response = requests.post(preprocess_url, json={'jobID': job_id, 'model_id': model_id, 'pps_id': pps_id, 'median_time': median_time}, timeout=600)
         if response.status_code == 200:
             return Response("Comments OK", status=200)
@@ -150,7 +151,7 @@ def get_median_time_for_comments(comments):
     for comment in comments:
         comment_datetimes.append(comment[1])
 
-    comment_timestamps = [datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%fZ") for time in comment_datetimes]
+    comment_timestamps = [datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ") for time in comment_datetimes]
     comment_timestamps = sorted(comment_timestamps)
     num_timestamps = len(comment_timestamps)
     if num_timestamps % 2 == 0:
@@ -165,7 +166,7 @@ def get_median_time_for_comments(comments):
             median_timestamp = date2 + (time_diff // 2)
     else:
         median_timestamp = comment_timestamps[num_timestamps // 2]
-    return median_timestamp
+    return median_timestamp.__str__()
 
 if __name__ == '__main__':
     app.run(debug = True, host='0.0.0.0', port=8001)
