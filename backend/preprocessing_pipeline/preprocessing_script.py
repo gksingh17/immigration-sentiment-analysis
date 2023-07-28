@@ -57,8 +57,7 @@ def runner():
         add_corpus_to_db(testCorpus, jobID)
         topicCorpus = perform_preprocessing_topic_text(comments) 
         add_topicCorpus_to_db(topicCorpus, jobID)
-        #model_runner_url = 'http://nlp_service:8003/api/callmodel'
-        model_runner_url = 'http://localhost:8003/api/callmodel'
+        model_runner_url = 'http://nlp_service:8003/api/callmodel'
         response = requests.post(model_runner_url, json={'jobID': jobID, 'model_id': modelID, 'median_time': median_time}, timeout=600)
         if response.status_code == 200:
             return jsonify({'status': 'success', 'message': 'Preprocessing completed and model_runner executed successfully'}), 200
