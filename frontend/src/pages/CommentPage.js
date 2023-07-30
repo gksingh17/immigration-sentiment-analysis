@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import ListItemText from '@mui/material/ListItemText';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // @mui
 import {
@@ -224,7 +225,7 @@ export default function CommentPage() {
         </form>
         {isLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <CircularProgress />
+          <CircularProgress />
           </div>
         ) : (
           submitted && (
