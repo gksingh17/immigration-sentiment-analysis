@@ -24,10 +24,11 @@ MAX_EMOTIONS_LENGTH=4
 @app.route("/api/callmodel", methods=['POST'])
 def model_runner():
     data = request.json
-    if 'jobID' not in data or 'model_id' not in data:
+    if 'jobID' not in data or 'model_id' not in data or 'median_time' not in data:
         return jsonify({'status': 'error', 'message': 'jobID and model_id are required fields'}), 400
     jobID = data.get('jobID')
     modelID = data.get('model_id')
+    median_time = data.get('median_time')
     if modelID not in [1, 2, 3, 4, 5, 6]:
         return jsonify({'status': 'error', 'message': 'Valid values for model_id are 1,2,3,4,5,6'}), 400
     
@@ -40,7 +41,7 @@ def model_runner():
     if testCorpus is None or len(testCorpus)==0:    
         return jsonify({'status': 'error', 'message': 'test_corpus not found in DB'}), 400
     prediction_summary = get_predictions_from_deployment(modelID, jobID)
-    prediction_summary = get_predictions_from_go_emotions(prediction_summary, testCorpus, jobID)
+    prediction_summary = get_predictions_from_go_emotions(prediction_summary, testCorpus, jobID, median_time)
     sentiment_dict = {key: value for key, value in prediction_summary.items() if key not in ['emotions']}
     emotions_json = prediction_summary.get('emotions', {})
 
@@ -70,7 +71,7 @@ def get_preprocessed_text_from_db(jobID):
     return sentences
 
 def add_predictions_to_db(prediction_summary, jobID, modelID):
-    models=["CNN", "LSTM", "XGBOOST"]
+    models=["CNN", "LSTM", "XGBOOST", "CNN+XGBOOST", "LSTM+XGBOOST", "CNN+LSTM"]
     connection = mysql.connector.connect(
         user=os.getenv('MYSQL_ROOT_USERNAME'),
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
@@ -110,7 +111,7 @@ def get_topic_text_from_db(jobID):
         logging.error(f"Error: {str(e)}")
     return topicCorpus
 
-def generate_json_data(output, jobID):
+def generate_json_data(output, jobID, median_time):
     emotions = {
         0: ["anger", "annoyance", "disapproval"],
         1: ["joy", "amusement", "approval", "excitement"],
@@ -136,7 +137,8 @@ def generate_json_data(output, jobID):
 
     json_data = {
         "job_id": jobID,
-        "result": result
+        "result": result,
+        "median_time":median_time
     }
     return json_data
 
@@ -193,7 +195,7 @@ def topic_detection(topicCorpus):
             return response_data
         else:
             raise ValueError(f"Request failed for topic Modelling {response.status_code}")
-    except exceptions as e:
+    except Exception as e:
         logging.error(f"Error: {str(e)}")
     
     return topics_list
@@ -220,12 +222,12 @@ def get_predictions_from_deployment(model_id, job_id):
         raise ValueError(f"Unexpected error - {str(e)}")
 
 
-def get_predictions_from_go_emotions(prediction_summary, testCorpus, jobID):
+def get_predictions_from_go_emotions(prediction_summary, testCorpus, jobID, median_time):
     testCorpus = pd.Series(testCorpus)
     emotion_model = tf.keras.models.load_model(savedModels['goemotion'])
     emotion_predictions = emotion_model.predict(testCorpus)
     emotion_predictions = np.argmax(emotion_predictions, axis=1)
-    json_result = generate_json_data(emotion_predictions, jobID)
+    json_result = generate_json_data(emotion_predictions, jobID, median_time)
     prediction_summary['emotions'] = json_result
     return prediction_summary
 
