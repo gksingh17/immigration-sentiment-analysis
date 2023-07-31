@@ -2,9 +2,10 @@
 
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
+import { Card, CardHeader, Box } from '@mui/material';
 // import data from "./data";
 
-function BarChartRace ({data}) {
+function BarChartRace({ data, title, subheader, ...other }) {
   const ref = useRef();
 
   const duration = 750;
@@ -85,7 +86,7 @@ function BarChartRace ({data}) {
         const width = node.getBoundingClientRect().width;
         const height = node.getBoundingClientRect().height;
 
-        svg.style("background-color", background); // Apply background color
+        // svg.style("background-color", background); // Apply background color
 
         const dateData = keyframe[1].sort((a, b) =>
           d3.descending(a.value, b.value)
@@ -168,12 +169,36 @@ function BarChartRace ({data}) {
             };
           });
 
+          // Add date
+        let dateText = svg.selectAll(".date").data([keyframe]);
+
+        dateText
+          .enter()
+          .append("text")
+          .attr("class", "date")
+          .attr("x", width - 10) // adjust these values to position the date
+          .attr("y", height - 10) // adjust these values to position the date
+          .attr("text-anchor", "end")
+          .merge(dateText)
+          .text(([date]) => {
+            // Format date here as necessary
+            return date.toLocaleDateString();
+          });
+
         values.exit().remove();
       }
     }
   };
 
-  return <svg ref={ref} />;
+  return (
+    <Card {...other}>
+      <CardHeader title={title} subheader={subheader} />
+      <Box sx={{ p: 3, pb: 1 }} dir="ltr">
+        <svg ref={ref} style={{ width: '100%', height: '100%' }} />
+      </Box>
+    </Card>
+  );
 };
 
 export default BarChartRace;
+
