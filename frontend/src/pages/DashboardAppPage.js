@@ -207,21 +207,40 @@ export default function DashboardAppPage() {
   }
 
   function transformRaceData(data) {
-    return data.result.map(item => {
+    // Convert data into {date, name, value} format
+    let formattedData = data.result.map(item => {
       let key = Object.keys(item)[0];
       return {
-        date: data.median_time.split(' ')[0], // get only the date part
+        date: data.median_time.split(' ')[0],  // get only the date part
         name: key,
         value: item[key]
       };
     });
+  
+    // Group data by date and name, and sum up the value for each group
+    let groupedData = formattedData.reduce((acc, cur) => {
+      // Generate a unique key representing the combination of date and name
+      let key = `${cur.date}_${cur.name}`;
+      // If this key doesn't exist in the accumulator, create a new object
+      if (!acc[key]) {
+        acc[key] = {...cur};
+      } else {
+        // Otherwise, accumulate the value
+        acc[key].value += cur.value;
+      }
+      return acc;
+    }, {});
+  
+    // Convert the grouped data (which is an object) back into array format
+    return Object.values(groupedData);
   }
+  
 
-  const realBarRaceData = []
+  let realBarRaceData = []
   function handleRaceData() {
     if (data && data.row3_1) {
       data.row3_1.map(item =>{
-        realBarRaceData.push(transformRaceData(item.goemotion_result))
+        realBarRaceData = [...realBarRaceData, ...transformRaceData(item.goemotion_result)];
       })
     }
   }
@@ -236,6 +255,7 @@ export default function DashboardAppPage() {
   // console.log(data.row1_2[0].numOfcomments);
   // console.log(data.row1_34[1].numOfComments);
   // console.log(data.row1_34[2].numOfComments);
+  console.log(barRaceData);
   console.log(realBarRaceData);
   // console.log(data.row3_2);
   // console.log(pieData)
@@ -325,7 +345,7 @@ export default function DashboardAppPage() {
           </Grid>
           
           <Grid item xs={12} md={6} lg={8}>
-            <BarChartRace data={barRaceData} />
+            <BarChartRace data={realBarRaceData} />
           </Grid>
 
           <Grid item xs={12} md={6} lg={4}>
