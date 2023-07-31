@@ -58,9 +58,7 @@ def index():
                 return jsonify(prediction_summary), 200
             elif modelID==4 or modelID==5:
                 embeddings = get_vector_data_from_db(job_id)
-                
                 testCorpus=get_preprocessed_text_from_db(job_id)
-                
                 if embeddings is None or len(embeddings)==0:
                     logging.error(f"Error: Padded Sequence not found in DB")
                     return jsonify({'status': 'error', 'message': 'Padded Sequence not found in DB'}), 400
@@ -72,8 +70,6 @@ def index():
                 for key, value in prediction_summary.items():
                     if isinstance(value, np.ndarray):
                         prediction_summary[key] = value.tolist()
-                print("Prediction summary:")
-                print(prediction_summary)
                 return jsonify(prediction_summary), 200
             else:
                 logging.error(f"Error: invalid model ID")
@@ -181,7 +177,6 @@ def get_vector_data_from_db(jobID):
         if len(vector_data) == 0:
             raise Exception('No vector data found in MongoDB')
         vector_array = np.array(vector_data)
-        #print(vector_array)
         return vector_array       
     except Exception as e:
         logging.error(f"Error Vector Data: {str(e)}")
