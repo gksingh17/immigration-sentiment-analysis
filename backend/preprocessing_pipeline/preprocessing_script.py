@@ -49,7 +49,7 @@ def runner():
         return jsonify({'status': 'error', 'message': 'Valid values for model_id are 1,2,3,4,5,6'}), 400
     try:
         comments = get_comments_from_db(jobID)
-        if modelID == 1 or modelID == 2:
+        if modelID in [1, 2, 4, 5, 6]: 
             padded_sequences = generate_embeddings(comments, pps_id)
             push_mongo(padded_sequences, jobID)
 

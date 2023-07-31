@@ -1,4 +1,5 @@
 import torch
+import os
 import torch.nn as nn
 import pickle
 import numpy as np
@@ -7,7 +8,8 @@ import xgboost as xgb
 from pymongo import MongoClient
 import mysql.connector
 from flask import Flask, request, jsonify
-import os
+import logging
+
 
 load_dotenv()
 
@@ -46,7 +48,8 @@ def index():
                 return jsonify(prediction_summary), 200
             elif modelID==3:
                 testCorpus=get_preprocessed_text_from_db(job_id)
-                if testCorpus is None or len(testCorpus)==0:    
+                if testCorpus is None or len(testCorpus)==0:
+                    logging.error(f"Error: test_corpus not found in DB")
                     return jsonify({'status': 'error', 'message': 'test_corpus not found in DB'}), 400
                 prediction_summary = prediction(modelID, testCorpus=testCorpus)
                 for key, value in prediction_summary.items():
@@ -55,21 +58,29 @@ def index():
                 return jsonify(prediction_summary), 200
             elif modelID==4 or modelID==5:
                 embeddings = get_vector_data_from_db(job_id)
+                
                 testCorpus=get_preprocessed_text_from_db(job_id)
+                
                 if embeddings is None or len(embeddings)==0:
+                    logging.error(f"Error: Padded Sequence not found in DB")
                     return jsonify({'status': 'error', 'message': 'Padded Sequence not found in DB'}), 400
                 if testCorpus is None or len(testCorpus)==0:    
+                    logging.error(f"Error: test_corpus not found in DB")
                     return jsonify({'status': 'error', 'message': 'test_corpus not found in DB'}), 400
                 input_tensor = pad_and_stack_embeddings(embeddings)
                 prediction_summary = prediction(modelID, input_tensor=input_tensor, testCorpus=testCorpus)
                 for key, value in prediction_summary.items():
                     if isinstance(value, np.ndarray):
                         prediction_summary[key] = value.tolist()
+                print("Prediction summary:")
+                print(prediction_summary)
                 return jsonify(prediction_summary), 200
             else:
-               return jsonify({'status': 'error', 'message': 'Received invalid modelId'}), 400 
+                logging.error(f"Error: invalid model ID")
+                return jsonify({'status': 'error', 'message': 'Received invalid modelId'}), 400 
 
         except Exception as e:
+            logging.error(f"Error: {str(e)}")
             return jsonify({'error': str(e)})
     return "OK"
 
@@ -128,18 +139,20 @@ class LSTMModel(nn.Module):
     
     def __str__(self):
         return "LSTM Loaded"
-    
 
 def pad_and_stack_embeddings(embeddings):
     max_length = max(len(embedding) for embedding in embeddings)
     padded_embeddings = []
     for embedding in embeddings:
         padding_length = max_length - len(embedding)
-        padded_embedding = embedding + [0.0] * padding_length
+        padded_embedding = np.pad(embedding, (0, padding_length), mode='constant', constant_values=0.0)
         padded_embeddings.append(padded_embedding)
+    if not padded_embeddings:
+        raise Exception("Padded is Empty")
     padded_sequences = np.array(padded_embeddings)
     input_tensor = torch.tensor(padded_sequences, dtype=torch.long)
     return input_tensor
+
 
 def get_preprocessed_text_from_db(jobID):
     connection = mysql.connector.connect(
@@ -168,10 +181,10 @@ def get_vector_data_from_db(jobID):
         if len(vector_data) == 0:
             raise Exception('No vector data found in MongoDB')
         vector_array = np.array(vector_data)
+        #print(vector_array)
         return vector_array       
     except Exception as e:
-        print('Connection Failed')
-        print(str(e))
+        logging.error(f"Error Vector Data: {str(e)}")
         return jsonify({'status': 'error', 'message': 'No vector data found in MongoDB'}), 404
 
 def prediction(model_id, input_tensor=None, testCorpus=None):
