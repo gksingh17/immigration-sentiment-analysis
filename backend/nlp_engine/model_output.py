@@ -71,7 +71,7 @@ def get_preprocessed_text_from_db(jobID):
     return sentences
 
 def add_predictions_to_db(prediction_summary, jobID, modelID):
-    models=["CNN", "LSTM", "XGBOOST"]
+    models=["CNN", "LSTM", "XGBOOST", "CNN+XGBOOST", "LSTM+XGBOOST", "CNN+LSTM"]
     connection = mysql.connector.connect(
         user=os.getenv('MYSQL_ROOT_USERNAME'),
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
