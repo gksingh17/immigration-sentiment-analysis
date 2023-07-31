@@ -323,25 +323,9 @@ export default function DashboardAppPage() {
               ]}
             />
           </Grid>
-
+          
           <Grid item xs={12} md={6} lg={8}>
             <BarChartRace data={barRaceData} />
-            {/* <AppConversionRates
-              title="Emotion Racing"
-              subheader="(+43%) than last year"
-              chartData={[
-                { label: 'Italy', value: 400 },
-                { label: 'Japan', value: 430 },
-                { label: 'China', value: 448 },
-                { label: 'Canada', value: 470 },
-                { label: 'France', value: 540 },
-                { label: 'Germany', value: 580 },
-                { label: 'South Korea', value: 690 },
-                { label: 'Netherlands', value: 1100 },
-                { label: 'United States', value: 1200 },
-                { label: 'United Kingdom', value: 1380 },
-              ]}
-            /> */}
           </Grid>
 
           <Grid item xs={12} md={6} lg={4}>

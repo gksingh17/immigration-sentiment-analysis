@@ -1,16 +1,13 @@
 /* eslint-disable */
 
-import React, { useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Card, CardHeader, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { TagCloud } from 'react-tagcloud';
 
-
-
-function WordCloud({word_cloud_data}) {
-  // Set initial topic to the first item in the array
+function WordCloud({word_cloud_data, title, subheader, ...other }) {
   const [selectedTopic, setSelectedTopic] = useState(word_cloud_data[0]?.id || []);
-  // const [selectedTopic, setSelectedTopic] = useState([]);
-
   const [selectedWords, setSelectedWords] = useState([]);
+
   const handleTopicChange = (event) => {
     setSelectedTopic(parseInt(event.target.value));
   };
@@ -18,24 +15,32 @@ function WordCloud({word_cloud_data}) {
   useEffect(() => {
     setSelectedWords(word_cloud_data.find((topic) => topic.id === selectedTopic)?.words || []);
   });
-  
-  return (  
-    <>
-    <div>
-      <label htmlFor="topicDropdown">Select a topic: </label>
-      <select id="topicDropdown" value={selectedTopic} onChange={handleTopicChange}>
-        {word_cloud_data.map((topic) => (
-          <option key={topic.id} value={topic.id}>
-            {topic.name}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div className="word-cloud-container">
-      <TagCloud minSize={25} maxSize={70} tags={selectedWords} className="tag-cloud" />
-    </div>
-  </>
-    
+
+  return (
+    <Card {...other}>
+      <CardHeader title={title} subheader={subheader} />
+      <Box sx={{ p: 3, pb: 1 }} dir="ltr">
+        <FormControl variant="standard">
+          <InputLabel id="topic-dropdown-label">Select a topic</InputLabel>
+          <Select
+            labelId="topic-dropdown-label"
+            id="topicDropdown"
+            value={selectedTopic}
+            onChange={handleTopicChange}
+            label="Select a topic"
+          >
+            {word_cloud_data.map((topic) => (
+              <MenuItem key={topic.id} value={topic.id}>
+                {topic.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <div className="word-cloud-container" style={{ marginTop: '20px' }}>
+          <TagCloud minSize={25} maxSize={70} tags={selectedWords} className="tag-cloud" />
+        </div>
+      </Box>
+    </Card>
   );
 }
 

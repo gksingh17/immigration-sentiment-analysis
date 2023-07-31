@@ -27,6 +27,13 @@ Model_id mapping:-
 5=LSTM+XGBOOST
 6=CNN+LSTM
 """
+
+#mise en place
+RECALL_CNN = 0.46
+RECALL_LSTM = 0.56
+RECALL_XGBOOST = 0.64
+
+
 @app.route("/predict", methods=["POST"])
 def index():
     if request.method=="POST":
@@ -207,35 +214,43 @@ def prediction(model_id, input_tensor=None, testCorpus=None):
         loaded_cnn_model = CNNModel(embedding_matrix, num_classes=3)
         prediction_summary_cnn = predict_with_embedding(loaded_cnn_model, prediction_summary.copy(), 1, input_tensor, class_labels)
         prediction_summary_xgb = predict_with_xgboost(prediction_summary.copy(), testCorpus)
-        combined_summary = combine_results([prediction_summary_cnn, prediction_summary_xgb])
+        combined_summary = combine_results(prediction_summary_cnn, prediction_summary_xgb, model_id)
         return combined_summary
     elif model_id == 5:
         loaded_lstm_model = LSTMModel(embedding_matrix, num_classes=3)
         prediction_summary_lstm = predict_with_embedding(loaded_lstm_model, prediction_summary.copy(), 2, input_tensor, class_labels)
         prediction_summary_xgb = predict_with_xgboost(prediction_summary.copy(), testCorpus)
-        combined_summary = combine_results([prediction_summary_lstm, prediction_summary_xgb])
+        combined_summary = combine_results(prediction_summary_lstm, prediction_summary_xgb, model_id)
         return combined_summary
     elif model_id == 6:
         loaded_cnn_model = CNNModel(embedding_matrix, num_classes=3)
         loaded_lstm_model = LSTMModel(embedding_matrix, num_classes=3)
         prediction_summary_cnn = predict_with_embedding(loaded_cnn_model, prediction_summary.copy(), 1, input_tensor, class_labels)
         prediction_summary_lstm = predict_with_embedding(loaded_lstm_model, prediction_summary.copy(), 2, input_tensor, class_labels)
-        combined_summary = combine_results([prediction_summary_cnn, prediction_summary_lstm])
+        combined_summary = combine_results(prediction_summary_cnn, prediction_summary_lstm, model_id)
         return combined_summary
     else:
         raise ValueError("Invalid model_id. Please choose a valid model_id from 1 to 6.")
     
 
-def combine_results(predictions_list):
-    class_labels = ['Hateful', 'Non-Hateful', 'Neutral']
-    combined_summary = {label: 0 for label in class_labels}
-
-    for predictions in predictions_list:
-        for label, count in predictions.items():
-            combined_summary[label] += count
-
-    return combined_summary
-
+def combine_results(predictions1, predictions2, model_id):
+    combined_results = {}
+    if model_id==4:
+        weight_1 = RECALL_CNN / (RECALL_CNN + RECALL_XGBOOST)
+        weight_2 = RECALL_XGBOOST / (RECALL_CNN + RECALL_XGBOOST)
+    elif model_id==5:
+        weight_1 = RECALL_LSTM / (RECALL_LSTM + RECALL_XGBOOST)
+        weight_2 = RECALL_XGBOOST / (RECALL_LSTM + RECALL_XGBOOST)
+    elif model_id==6:
+        weight_1 = RECALL_CNN / (RECALL_CNN + RECALL_LSTM)
+        weight_2 = RECALL_LSTM / (RECALL_CNN + RECALL_LSTM)
+    else:
+        raise ValueError("Invalid model_id sent to combine.")
+    for sentiment in predictions1.keys():
+        weighted_count = weight_1 * predictions1[sentiment] + weight_2 * predictions2[sentiment]
+        combined_results[sentiment] = int(round(weighted_count))
+    return combined_results
+    
 
 def predict_with_embedding(loaded_model, prediction_summary, model_id, input_tensor, class_labels):
     torch.manual_seed(42)
