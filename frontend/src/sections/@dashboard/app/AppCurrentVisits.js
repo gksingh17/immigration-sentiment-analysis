@@ -11,7 +11,7 @@ import { useChart } from '../../../components/chart';
 // ----------------------------------------------------------------------
 
 const CHART_HEIGHT = 372;
-const LEGEND_HEIGHT = 72;
+const LEGEND_HEIGHT = 120;
 
 const StyledChartWrapper = styled('div')(({ theme }) => ({
   height: CHART_HEIGHT,
@@ -70,7 +70,7 @@ export default function AppCurrentVisits({ title, subheader, chartColors, chartD
       <CardHeader title={title} subheader={subheader} />
 
       <StyledChartWrapper dir="ltr">
-        <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={280} />
+        <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={300} />
       </StyledChartWrapper>
     </Card>
   );

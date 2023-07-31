@@ -143,7 +143,8 @@ def dashboard_find():
             ["row1_34", "SELECT * FROM dashboardRow1"],
             ["row2_1", "SELECT * FROM dashboardBar"],
             ["row2_2", "SELECT * FROM dashboardPie"],
-            ["row3_2", "SELECT topic_info FROM topics_result_table"]
+            ["row3_1", "SELECT * FROM goemotion_result_table"],
+            ["row3_2", "SELECT topic_info FROM topics_result_table order by id desc limit 5"]
         ]
 
         # Execute each query
@@ -152,6 +153,9 @@ def dashboard_find():
             cursor.execute(entry[1])
             result = cursor.fetchall()
             results[entry[0]]=result
+
+        for item in results['row3_1']:
+                item["goemotion_result"] = json.loads(item["goemotion_result"])
 
         for item in results['row3_2']:
                 item["topic_info"] = json.loads(item["topic_info"])

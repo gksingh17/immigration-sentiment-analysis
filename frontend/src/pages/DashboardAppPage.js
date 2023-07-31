@@ -158,23 +158,20 @@ export default function DashboardAppPage() {
   ];
 
   const [data, setData] = useState(null);
-  const [pieData, setPieData] = useState([]);
+  // const [pieData, setPieData] = useState([]);
   useEffect(() => {
       try {
           const url = `${process.env.REACT_APP_NLP_PLATFORM_API_URL}/api/dashboard`
           fetch(url)
           .then(response => response.json())
-          .then(data => setData(data))
+          .then(data => {
+            setData(data)
+            // handlePieData()
+          })
           .catch(error => console.error(error));                              
-          setData(data);
 
           console.log('hook print: ', data);
 
-          const pData = data.row2_2.map(item => ({
-            label: item.label,
-            value: item.ratio,
-          }));
-          setPieData(pData)
           // let result = data.piechart_data[0].goemotion_result.result;
   
           // let transformedData2 = [["Task", "Hours per Day"]];
@@ -196,18 +193,54 @@ export default function DashboardAppPage() {
       } finally { /* empty */ }
   }, []);
 
+  function handlePieData() {
+    if (data && data.row2_2) {
+      const emotions = data.row2_2[0]
+      let newData = Object.keys(emotions).map(key => {
+        return {
+            label: key,
+            value: emotions[key]
+        };
+      });
+      return newData;
+    }
+  }
+
+  function transformRaceData(data) {
+    return data.result.map(item => {
+      let key = Object.keys(item)[0];
+      return {
+        date: data.median_time.split(' ')[0], // get only the date part
+        name: key,
+        value: item[key]
+      };
+    });
+  }
+
+  const realBarRaceData = []
+  function handleRaceData() {
+    if (data && data.row3_1) {
+      data.row3_1.map(item =>{
+        realBarRaceData.push(transformRaceData(item.goemotion_result))
+      })
+    }
+  }
+  handleRaceData();
+
   if (!data) return 'Loading......';  // Render some loading text or a spinner here
 
-
-
-
+  const pieData = handlePieData()
+  
   console.log('after hook: ',data);
-  console.log(data.row1_1[0].numOfVideos);
-  console.log(data.row1_2[0].numOfcomments);
-  console.log(data.row1_34[1].numOfComments);
-  console.log(data.row1_34[2].numOfComments);
-  console.log(data.row3_2);
+  // console.log(data.row1_1[0].numOfVideos);
+  // console.log(data.row1_2[0].numOfcomments);
+  // console.log(data.row1_34[1].numOfComments);
+  // console.log(data.row1_34[2].numOfComments);
+  console.log(realBarRaceData);
+  // console.log(data.row3_2);
+  // console.log(pieData)
 
+  
   return (
     <>
       <Helmet>
