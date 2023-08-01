@@ -194,7 +194,7 @@ function BarChartRace({ data, title, subheader, ...other }) {
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} />
       <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-        <svg ref={ref} style={{ width: '100%', height: '100%' }} />
+        <svg ref={ref} style={{ width: '100%', height: '200%' }} />
       </Box>
     </Card>
   );

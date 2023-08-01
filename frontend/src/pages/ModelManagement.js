@@ -43,7 +43,8 @@ const TABLE_HEAD = [
   { id: 'name', label: 'Model Name', alignRight: false },
   { id: 'accuracy', label: 'Accuracy', alignRight: false },
   { id: 'recall', label: 'Recall', alignRight: false },
-  { id: 'f1score', label: 'F1 Score', alignRight: false },
+  { id: 'f1-score', label: 'F1 Score', alignRight: false },
+  { id: 'precision', label: 'precision', alignRight: false },
   { id: 'enable', label: 'Enable', alignRight: false },
   {},
 ];
@@ -207,8 +208,10 @@ export default function ModelManagement() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, accuracy, recall, f1score, enable } = row;
+                    let { id, name, performance, enable } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
+                    performance = JSON.parse(performance)
+                    console.log(performance)
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
@@ -219,9 +222,10 @@ export default function ModelManagement() {
                         <TableCell align="left">{id}</TableCell>
 
                         <TableCell align="left">{name}</TableCell>
-                        <TableCell align="left">{accuracy}</TableCell>
-                        <TableCell align="left">{recall}</TableCell>
-                        <TableCell align="left">{f1score}</TableCell>
+                        <TableCell align="left">{performance.accuracy}</TableCell>
+                        <TableCell align="left">{performance.recall}</TableCell>
+                        <TableCell align="left">{performance['f1-score']}</TableCell>
+                        <TableCell align="left">{performance.precision}</TableCell>
                         <TableCell align="left">
                           <Switch
                               defaultChecked={enable === 1}

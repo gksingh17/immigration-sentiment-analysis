@@ -11,7 +11,7 @@ import { useChart } from '../../../components/chart';
 // ----------------------------------------------------------------------
 
 const CHART_HEIGHT = 372;
-const LEGEND_HEIGHT = 72;
+const LEGEND_HEIGHT = 120;
 
 const StyledChartWrapper = styled('div')(({ theme }) => ({
   height: CHART_HEIGHT,

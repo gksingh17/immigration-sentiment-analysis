@@ -191,7 +191,7 @@ export default function CommentPage() {
                     value={modelID}
                     onChange={(e) => setModelID(e.target.value)}
                 >
-                    {MODELLIST.map((model) => (
+                    {MODELLIST.filter(e => e.enable === 1).map((model) => (
                         <MenuItem key={model.id} value={model.id}>
                             {model.name}
                         </MenuItem>
