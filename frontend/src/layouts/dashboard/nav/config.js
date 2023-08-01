@@ -22,15 +22,15 @@ const navConfig = [
     icon: icon('ic_blog'),
   },
   {
-    title: 'batch config',
+    title: 'batch tasks',
     path: '/dashboard/batch',
     icon: icon('ic_cart'),
   },
-  // {
-  //   title: 'blog',
-  //   path: '/dashboard/blog',
-  //   icon: icon('ic_blog'),
-  // },
+  {
+    title: 'about',
+    path: '/dashboard/about',
+    icon: icon('ic_lock'),
+  },
   // {
   //   title: 'login',
   //   path: '/login',

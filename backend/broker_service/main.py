@@ -174,10 +174,10 @@ def dashboard_find():
                 'words': words
             })
         results['row3_2']=new_data
-        print(results)
+        # print(results)
  
         response = jsonify(results)
-        print(response)
+        # print(response)
         response.status_code = 200
         return response
     except Exception as e:
