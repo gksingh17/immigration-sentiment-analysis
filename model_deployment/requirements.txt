@@ -5,3 +5,4 @@ xgboost
 pymongo==4.4.0
 python-dotenv
 mysql-connector-python
+scikit-learn
