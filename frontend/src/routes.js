@@ -10,6 +10,7 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import ModelManagement from './pages/ModelManagement';
+import About from './pages/AboutPage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -22,7 +23,7 @@ export default function Router() {
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'comment', element: <CommentPage /> },
         { path: 'model_management', element: <ModelManagement /> },
-        // { path: 'products', element: <ProductsPage /> },
+        { path: 'about', element: <About /> },
         // { path: 'blog', element: <BlogPage /> },
       ],
     },
@@ -38,10 +39,10 @@ export default function Router() {
         { path: '*', element: <Navigate to="/404" /> },
       ],
     },
-    // {
-    //   path: '*',
-    //   element: <Navigate to="/404" replace />,
-    // },
+    {
+      path: '*',
+      element: <Navigate to="/404" replace />,
+    },
   ]);
 
   return routes;
