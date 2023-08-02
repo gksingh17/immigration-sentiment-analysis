@@ -31,6 +31,15 @@ const navConfig = [
     path: '/dashboard/about',
     icon: icon('ic_lock'),
   },
+    title: 'batch config',
+    path: '/dashboard/batch',
+    icon: icon('ic_cart'),
+  },
+  // {
+  //   title: 'blog',
+  //   path: '/dashboard/blog',
+  //   icon: icon('ic_blog'),
+  // },
   // {
   //   title: 'login',
   //   path: '/login',
