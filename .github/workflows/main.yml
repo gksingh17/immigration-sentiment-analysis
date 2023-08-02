@@ -43,7 +43,7 @@ jobs:
       - name: Run Unit Tests for broker service
         run: |
           cd backend/broker_service/unit_test
-          python -m pytest
+          pytest
 
 
 
