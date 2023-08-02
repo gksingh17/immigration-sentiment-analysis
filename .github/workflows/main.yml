@@ -4,11 +4,11 @@ on:
   push:
     branches:
     - main
-    - ft_vincent
+    - dev-vincent
   pull_request:
     branches:
     - main 
-    - ft_vincent
+    - dev-vincent
 
 jobs:
   build:
