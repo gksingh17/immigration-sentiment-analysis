@@ -200,7 +200,7 @@ def topic_detection(topicCorpus):
     
     return topics_list
 
-def get_predictions_from_deployment(model_id, job_id, median_time):
+def get_predictions_from_deployment(model_id, job_id):
     #model_base_url = 'http://127.0.0.1:8004/predict'
     model_base_url = 'http://model_deployment:8004/predict'
     try:
