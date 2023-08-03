@@ -48,11 +48,10 @@ def runner():
         return jsonify({'status': 'error', 'message': 'Valid values for model_id are 1,2,3,4,5,6'}), 400
     try:
         comments = get_comments_from_db(jobID)
-        if modelID in [1, 2, 4, 5, 6]: 
-            padded_sequences = generate_embeddings(comments, pps_id)
-            push_mongo(padded_sequences, jobID)
-
         testCorpus = perform_preprocessing(comments, pps_id)
+        if modelID in [1, 2, 4, 5, 6]: 
+            padded_sequences = generate_embeddings(testCorpus, pps_id)
+            push_mongo(padded_sequences, jobID)
         add_corpus_to_db(testCorpus, jobID)
         topicCorpus = perform_preprocessing_topic_text(comments) 
         add_topicCorpus_to_db(topicCorpus, jobID)

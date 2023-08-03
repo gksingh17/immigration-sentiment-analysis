@@ -162,7 +162,7 @@ def add_emotions_results_to_db(json_data, jobID, median_time):
     finally:
         connection.close()
 
-def add_topic_results_to_db(topicsDetected, jobID):
+def add_topic_results_to_db(topicsDetected, jobID, median_time):
     try:
         connection = mysql.connector.connect(
         user=os.getenv('MYSQL_ROOT_USERNAME'),
@@ -171,9 +171,9 @@ def add_topic_results_to_db(topicsDetected, jobID):
         database=os.getenv('MYSQL_DB')
         )
         with connection.cursor() as cursor:
-            sql = "INSERT INTO topics_result_table (job_id, topic_info) VALUES (%s, %s)"
+            sql = "INSERT INTO topics_result_table (job_id, topic_info, median_time) VALUES (%s, %s, %s)"
             for topic in topicsDetected:
-                cursor.execute(sql, (jobID, json.dumps(topic)))
+                cursor.execute(sql, (jobID, json.dumps(topic), median_time))
             connection.commit()
             return True
     except Exception as e:
@@ -200,7 +200,7 @@ def topic_detection(topicCorpus):
     
     return topics_list
 
-def get_predictions_from_deployment(model_id, job_id, median_time):
+def get_predictions_from_deployment(model_id, job_id):
     #model_base_url = 'http://127.0.0.1:8004/predict'
     model_base_url = 'http://model_deployment:8004/predict'
     try:
