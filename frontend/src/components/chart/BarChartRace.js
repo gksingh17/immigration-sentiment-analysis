@@ -19,7 +19,7 @@ function BarChartRace({ data, title, subheader, ...other }) {
   let x = d3.scaleLinear();
 
   // Define a new color scale
-  let color = d3.scaleOrdinal().range(d3.schemeTableau10);
+  let color = d3.scaleOrdinal().range(d3.schemePaired);
 
   const k = 10;
 
@@ -96,7 +96,7 @@ function BarChartRace({ data, title, subheader, ...other }) {
           .scaleBand()
           .domain(dateData.map((d) => d.name))
           .range([0, height])
-          .padding(0.1);
+          .padding(0.050);
 
         const bars = svg.selectAll("rect").data(dateData, (d) => d.name);
 
@@ -191,12 +191,15 @@ function BarChartRace({ data, title, subheader, ...other }) {
   };
 
   return (
-    <Card {...other}>
-      <CardHeader title={title} subheader={subheader} />
-      <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-        <svg ref={ref} style={{ width: '100%', height: '200%' }} />
-      </Box>
-    </Card>
+    <Box sx={{ height: '100vh', width: '100%' }}>
+      <Card {...other} sx={{width: '100%', height: '40vh'}}>
+        <CardHeader title={title} subheader={subheader} />
+        <Box sx={{ p: 3, pb: 1 }} dir="ltr">
+        <svg ref={ref} width="950" height="350"></svg>
+
+        </Box>
+      </Card>
+    </Box>
   );
 };
 
