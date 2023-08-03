@@ -6,6 +6,9 @@ import { Spinner } from 'react-bootstrap';
 import PieChart from './PieChart'
 import { Chart } from "react-google-charts";
 import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+
 
 const MyBarChart = ({ url, number, model_id , preprocessIDs}) => {
   const [chartData, setChartData] = useState(null);
@@ -58,8 +61,10 @@ const MyBarChart = ({ url, number, model_id , preprocessIDs}) => {
 
   console.log(!chartData && !pieData);
   if(!chartData && !pieData) {
-    return  <h3>Loading...... Please wait a few minutes!</h3>
-    // return "<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}> <Spinner animation='border' /> </div>"
+    return  <div style={{ display: 'flex'}}>
+                <Box sx={{ display: 'flex' }}><CircularProgress /></Box>
+                &nbsp;&nbsp;<h3>  Loading......Please wait a few minutes! </h3>
+            </div>
   }
 
   return (
