@@ -332,8 +332,7 @@ export default function DashboardAppPage() {
 
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
-              title="Goemotion piechart"
-              
+              title="Goemotion Piechart"
               chartData={pieData}
               chartColors={[
                 theme.palette.primary.main,
