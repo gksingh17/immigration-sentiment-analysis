@@ -4,11 +4,11 @@ on:
   push:
     branches:
     - main
-    - ft_vincent
+    - dev-vincent
   pull_request:
     branches:
     - main 
-    - ft_vincent
+    - dev-vincent
 
 jobs:
   build:
@@ -39,9 +39,11 @@ jobs:
       - uses: actions/checkout@v1
       - name: Build the docker-compose stack
         run: docker-compose -f docker-compose.ci.yml build
-
-
-
+      
+      - name: Run Unit Tests for broker service
+        run: |
+          cd backend/broker_service/unit_test
+          sudo pytest
 
 
 
