@@ -1,7 +1,7 @@
 pytest
 pymongo
 python-dotenv
-pytest requests_mock
+requests-mock
 tensorflow==2.13.0
 protobuf==3.20.3
 tensorflow-text==2.13.0
