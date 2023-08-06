@@ -1,9 +1,8 @@
 /* eslint-disable */
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, Box, Tabs, Tab, Tooltip, Zoom, IconButton } from '@mui/material';
+import { Card, CardHeader, Box, Tabs, Tab } from '@mui/material';
 import { TagCloud } from 'react-tagcloud';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 function WordCloud({word_cloud_data, title, subheader, ...other }) {
   const [selectedTopic, setSelectedTopic] = useState(word_cloud_data[0]?.id || []);
@@ -18,17 +17,7 @@ function WordCloud({word_cloud_data, title, subheader, ...other }) {
   }, [selectedTopic, word_cloud_data]);
 
   return (
-    <Card {...other} sx={{width: '100%', height: '50vh', position: 'relative'}}>
-      <Tooltip 
-        title="Information about the word cloud" 
-        placement="top-end" 
-        TransitionComponent={Zoom}
-        sx={{ position: 'absolute', top: 0, right: 0 }}
-      >
-        <IconButton color="primary">
-          <HelpOutlineIcon />
-        </IconButton>
-      </Tooltip>
+    <Card {...other} sx={{width: '100%', height: '40vh'}}>
       <CardHeader title={title} subheader={subheader} />
       <Box sx={{ p: 3, pb: 1 }} dir="ltr">
         <Tabs
@@ -38,7 +27,7 @@ function WordCloud({word_cloud_data, title, subheader, ...other }) {
           textColor="primary"
           variant="scrollable"
           scrollButtons="auto"
-          sx={{ marginLeft: '-20px' }}
+          sx={{ marginLeft: '-20px' }} 
         >
           {word_cloud_data.map((topic) => (
             <Tab key={topic.id} value={topic.id} label={topic.name} />

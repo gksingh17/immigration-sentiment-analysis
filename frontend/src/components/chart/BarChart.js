@@ -1,222 +1,100 @@
 /* eslint-disable */
 
-import React, { useEffect, useRef } from "react";
-import * as d3 from "d3";
-import { Card, CardHeader, Box } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import Zoom from '@mui/material/Zoom';
-// import data from "./data";
+import React, { useEffect, useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { Spinner } from 'react-bootstrap';
+import PieChart from './PieChart'
+import { Chart } from "react-google-charts";
+import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
-function BarChartRace({ data, title, subheader, ...other }) {
-  const ref = useRef();
 
-  const duration = 750;
-  const background = "#f4f4f4"; // Background color of the SVG
+const MyBarChart = ({ url, number, model_id , preprocessIDs}) => {
+  const [chartData, setChartData] = useState(null);
+  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#0088FE'];
+  const fakeData = []
+  const [pieData, setPieData] = useState(null);
+  const options = {
+    title: "GoEmotion",
+  };
+  useEffect(() => {
+      const fetchChartData = async () => {
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_NLP_PLATFORM_API_URL}/api/comments`, {
+                url, 
+                number, 
+                model_id,
+                preprocessIDs
+            });
+    
+            const data = response.data;
+    
+            const transformedData = data.barchart_data.map(item => ({
+                label: item.label,
+                value: item.ratio,
+            }));
+    
+            let result = data.piechart_data[0].goemotion_result.result;
+    
+            let transformedData2 = [["Task", "Hours per Day"]];
+    
+            for (let i = 0; i < result.length; i++) {
+                let emotion = Object.keys(result[i])[0];
+                let value = result[i][emotion];
+                transformedData2.push([emotion, value]);
+            }
+    
+            console.log(transformedData);
+            console.log(transformedData2);
+    
+            setChartData(transformedData);
+            setPieData(transformedData2);
+    
+        } catch (error) {
+            console.error('Error:', error);
+        } finally { /* empty */ }
+    };
 
-  const names = new Set(data.map((d) => d.name));
-  const dates = Array.from(new Set(data.map((d) => d.date))).sort(d3.ascending);
+    fetchChartData();
+  }, [url, number]);
 
-  const n = Math.min(12, names.size);
-
-  let x = d3.scaleLinear();
-
-  // Define a new color scale
-  let color = d3.scaleOrdinal().range(d3.schemePaired);
-
-  const k = 10;
-
-  const datevalues = Array.from(
-    d3.rollup(
-      data,
-      ([d]) => d.value,
-      (d) => +new Date(d.date),
-      (d) => d.name
-    )
-  )
-    .map(([date, data]) => [new Date(date), data])
-    .sort(([a], [b]) => d3.ascending(a, b));
-
-  const keyframes = (() => {
-    const keyframes = [];
-    let ka, a, kb, b;
-    for ([[ka, a], [kb, b]] of d3.pairs(datevalues)) {
-      for (let i = 0; i < k; ++i) {
-        const t = i / k;
-        keyframes.push([
-          new Date(ka * (1 - t) + kb * t),
-          rank((name) => (a.get(name) || 0) * (1 - t) + (b.get(name) || 0) * t)
-        ]);
-      }
-    }
-    keyframes.push([new Date(kb), rank((name) => b.get(name) || 0)]);
-    return keyframes;
-  })();
-
-  function rank(value) {
-    const data = Array.from(names, (name) => ({ name, value: value(name) }));
-    data.sort((a, b) => d3.descending(a.value, b.value));
-    for (let i = 0; i < data.length; ++i) data[i].rank = Math.min(n, i);
-    return data;
+  console.log(!chartData && !pieData);
+  if(!chartData && !pieData) {
+    return  <div style={{ display: 'flex'}}>
+                <Box sx={{ display: 'flex' }}><CircularProgress /></Box>
+                &nbsp;&nbsp;<h3>  Loading......Please wait a few minutes! </h3>
+            </div>
   }
 
-  useEffect(() => {
-    if (ref.current) {
-      const svg = d3.select(ref.current);
-      const node = svg.node();
-      if (node) {
-        const width = node.getBoundingClientRect().width;
-
-        x = d3
-          .scaleLinear()
-          .domain([0, d3.max(data, (d) => d.value)])
-          .range([0, width]);
-
-        let i = 0;
-        d3.interval(() => {
-          update(keyframes[i]);
-          i = (i + 1) % keyframes.length;
-        }, duration);
-      }
-    }
-  }, []);
-
-  const update = (keyframe) => {
-    if (ref && ref.current) {
-      const svg = d3.select(ref.current);
-      const node = svg.node();
-      if (node) {
-        const width = node.getBoundingClientRect().width;
-        const height = node.getBoundingClientRect().height;
-
-        // svg.style("background-color", background); // Apply background color
-
-        const dateData = keyframe[1].sort((a, b) =>
-          d3.descending(a.value, b.value)
-        );
-
-        const y = d3
-          .scaleBand()
-          .domain(dateData.map((d) => d.name))
-          .range([0, height])
-          .padding(0.050);
-
-        const bars = svg.selectAll("rect").data(dateData, (d) => d.name);
-
-        const barsEnter = bars
-          .enter()
-          .append("rect")
-          .attr("x", 0)
-          .attr("y", (d) => y(d.name))
-          .attr("width", (d) => x(d.value))
-          .attr("height", y.bandwidth())
-          .attr("fill", (d) => color(d.rank / n));
-
-        const barsUpdate = barsEnter.merge(bars);
-
-        barsUpdate
-          .transition()
-          .duration(duration)
-          .attr("y", (d) => y(d.name))
-          .attr("width", (d) => x(d.value))
-          .attr("fill", (d) => color(d.rank / n));
-
-        bars.exit().remove();
-
-        // Add labels
-        const labels = svg.selectAll(".label").data(dateData, (d) => d.name);
-
-        const labelsEnter = labels
-          .enter()
-          .append("text")
-          .attr("class", "label")
-          .attr("x", (d) => x(d.value) + 5) // Adjust this for label positioning
-          .attr("y", (d) => y(d.name) + y.bandwidth() / 2)
-          .attr("dy", ".35em") // Vertically center text
-          .text((d) => d.name);
-
-        const labelsUpdate = labelsEnter.merge(labels);
-
-        labelsUpdate
-          .transition()
-          .duration(duration)
-          .attr("x", (d) => x(d.value) + 5) // Adjust this for label positioning
-          .attr("y", (d) => y(d.name) + y.bandwidth() / 2);
-
-        labels.exit().remove();
-
-        // Add values
-        const values = svg.selectAll(".value").data(dateData, (d) => d.name);
-
-        const valuesEnter = values
-          .enter()
-          .append("text")
-          .attr("class", "value")
-          .attr("x", (d) => x(d.value) - 5) // Adjust this for value positioning
-          .attr("y", (d) => y(d.name) + y.bandwidth() / 2)
-          .attr("dy", ".35em") // Vertically center text
-          .attr("text-anchor", "end") // Align text to end (right)
-          .text((d) => d3.format(",d")(d.value));
-
-        const valuesUpdate = valuesEnter.merge(values);
-
-        valuesUpdate
-          .transition()
-          .duration(duration)
-          .attr("x", (d) => x(d.value) - 5) // Adjust this for value positioning
-          .attr("y", (d) => y(d.name) + y.bandwidth() / 2)
-          .tween("text", function (d) {
-            let i = d3.interpolate(this.textContent.replace(/,/g, ""), d.value);
-            return function (t) {
-              this.textContent = d3.format(",d")(i(t));
-            };
-          });
-
-          // Add date
-        let dateText = svg.selectAll(".date").data([keyframe]);
-
-        dateText
-          .enter()
-          .append("text")
-          .attr("class", "date")
-          .attr("x", width - 10) // adjust these values to position the date
-          .attr("y", height - 10) // adjust these values to position the date
-          .attr("text-anchor", "end")
-          .merge(dateText)
-          .text(([date]) => {
-            // Format date here as necessary
-            return date.toLocaleDateString();
-          });
-
-        values.exit().remove();
-      }
-    }
-  };
-
   return (
-    <Box sx={{ height: '100vh', width: '100%', position: 'relative'}}>
-      <Card {...other} sx={{width: '100%', height: '50vh'}}>
-        <CardHeader title={title} subheader={subheader} />
-        <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-          <Box sx={{ position: 'relative' }}>
-            <Tooltip
-              title="Information about the bar chart race"
-              placement="top-end"
-              TransitionComponent={Zoom}
-              sx={{ position: 'absolute', top: -75, right: -25 }}
-            >
-              <IconButton color="primary">
-                <HelpOutlineIcon />
-              </IconButton>
-            </Tooltip>
-            <svg ref={ref} width="950" height="350"></svg>
-          </Box>
-        </Box>
-      </Card>
-    </Box>
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <br/>
+      <BarChart
+        width={700}
+        height={500}
+        data={chartData}
+        margin={{
+          top: 5, right: 30, left: 20, bottom: 5,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="label" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="value" fill="#8884d8" />
+      </BarChart>
+      
+      <Chart
+        chartType="PieChart"
+        data={pieData}
+        options={options}
+        width={"120%"}
+        height={"500px"}
+    /> 
+    </div>
   );
 };
 
-export default BarChartRace;
-
+export default MyBarChart;
