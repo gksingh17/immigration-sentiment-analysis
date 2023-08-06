@@ -6,6 +6,7 @@ import { faker } from '@faker-js/faker';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
+import YouTube from '@mui/icons-material/YouTube';
 // components
 import Iconify from '../components/iconify';
 // sections
@@ -158,20 +159,20 @@ export default function DashboardAppPage(props) {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Total Videos" total={data.row1_1[0].numOfVideos} icon={'ant-design:android-filled'} />
+            <AppWidgetSummary title="Total Videos" total={data.row1_1[0].numOfVideos} color="warning"  icon={'mdi:youtube'} />
             {/* <AppWidgetSummary title="Total Videos" total={200000} icon={'ant-design:android-filled'} /> */}
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Total Comments" total={data.row1_2[0].numOfcomments} color="info" icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Total Comments" total={data.row1_2[0].numOfcomments} color="info" icon={'octicon:number-24'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="#Non Hateful" total={data.row1_34[1].numOfComments} color="warning" icon={'ant-design:windows-filled'} />
+            <AppWidgetSummary title="#Non Hateful" total={data.row1_34[1].numOfComments} color="success" icon={'bxs:happy-alt'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="#Hateful" total={data.row1_34[2].numOfComments} color="error" icon={'ant-design:bug-filled'} />
+            <AppWidgetSummary title="#Hateful" total={data.row1_34[2].numOfComments} color="error" icon={'mingcute:angry-fill'} />
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>

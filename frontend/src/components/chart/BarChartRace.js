@@ -3,6 +3,10 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { Card, CardHeader, Box } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import Zoom from '@mui/material/Zoom';
 // import data from "./data";
 
 function BarChartRace({ data, title, subheader, ...other }) {
@@ -191,12 +195,23 @@ function BarChartRace({ data, title, subheader, ...other }) {
   };
 
   return (
-    <Box sx={{ height: '100vh', width: '100%' }}>
-      <Card {...other} sx={{width: '100%', height: '40vh'}}>
+    <Box sx={{ height: '100vh', width: '100%', position: 'relative'}}>
+      <Card {...other} sx={{width: '100%', height: '50vh'}}>
         <CardHeader title={title} subheader={subheader} />
         <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-        <svg ref={ref} width="950" height="350"></svg>
-
+          <Box sx={{ position: 'relative' }}>
+            <Tooltip
+              title="Information about the bar chart race"
+              placement="top-end"
+              TransitionComponent={Zoom}
+              sx={{ position: 'absolute', top: -75, right: -25 }}
+            >
+              <IconButton color="primary">
+                <HelpOutlineIcon />
+              </IconButton>
+            </Tooltip>
+            <svg ref={ref} width="950" height="350"></svg>
+          </Box>
         </Box>
       </Card>
     </Box>
