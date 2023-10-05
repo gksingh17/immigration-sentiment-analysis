@@ -1,4 +1,6 @@
-# Irish-Immigrations-Study-with-ML
+# Irish Immigration Sentiment Analysis
+
+In today's digital age, where platforms like YouTube serve as both entertainment hubs and windows into public sentiment, our project delves into the intricacies of immigration in Ireland. Using cutting-edge NLP models, we dissect sentiments from YouTube comments in near real-time, offering nuanced insights beyond the positive vs. negative spectrum. By annotating Irish-specific immigration videos, our approach equips policymakers and analysts with a deeper understanding of evolving narratives, demonstrating its potential in addressing complex societal challenges in our ever-evolving digital landscape.
 
 
 
