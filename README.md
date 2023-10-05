@@ -55,7 +55,7 @@ Sample Request JSON: {
     "jobID": "4b0ceaf1-704c-465e-bb6a-93e7d1bf8aow", "model_id": 1
 }
 
-## Running Backend Services Without Docker  (Windows User):
+### Running Backend Services Without Docker  (Windows User):
 
 ### Note: Changes Done in this section are for local testing and should not be merged with main branch.
 
@@ -67,9 +67,9 @@ to call the other services.
 For example the  YTComment.py the hostname in post call to preprocessing_script must be changed. e.g. preprocess_url = 'http://localhost:5002/api/preprocess' .
 Perform these changes in urls used for calls in other services as well.
 
-# CI/CD
+# Tests
 ### Configuration 
 To check the existing configuration used for running test cases go through main.yml file in .Github/workflows
 
-### Test Requirements
+## Test Requirements
 Please mention the requirements to execute your testcases in requirements-test.txt file
