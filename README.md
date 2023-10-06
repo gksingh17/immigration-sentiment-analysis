@@ -68,7 +68,7 @@ Perform these changes in urls used for calls in other services as well.
 
 # Usage
 
-![usage_1.jpeg](usage_1.jpeg)
+![usage_1.jpeg](usage_1.png)
 ![usage_2.jpeg](usage_2.jpeg)
 ![usage_3.png](usage_3.png)
 
